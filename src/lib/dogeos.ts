@@ -16,7 +16,7 @@ export const DOGEOS_EXPLORER_URL =
   import.meta.env.VITE_DOGEOS_EXPLORER_URL || "https://dogeos-testnet.l2scan.co";
 export const DOGEOS_IS_TESTNET = (import.meta.env.VITE_DOGEOS_TESTNET ?? "true") !== "false";
 export const DOGEOS_FAUCET_URL =
-  import.meta.env.VITE_DOGEOS_FAUCET_URL || "https://docs.dogeos.com/en/getting-started/user-guide/faucet";
+  import.meta.env.VITE_DOGEOS_FAUCET_URL || "https://faucet.testnet.dogeos.com";
 export const DOGEOS_SITE_URL = "https://www.dogeos.com";
 
 export const APP_NAME = import.meta.env.VITE_APP_NAME || "DogeGameLab";
