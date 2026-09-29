@@ -1,0 +1,1198 @@
+/*
+ * DOGE//TERMINAL — pixel + CRT terminal design system.
+ *
+ * The public/templates tree is huge, so Tailwind's automatic source detection
+ * stays off and only the application source directories are scanned.
+ */
+@import "tailwindcss" source(none);
+@source "../src/components/**/*.{tsx,jsx}";
+@source "../src/context/**/*.{tsx}";
+@source "../src/routes/**/*.{tsx}";
+@source "../src/lib/**/*.{ts,tsx}";
+@source "../src/hooks/**/*.{ts,tsx}";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * One deliberate visual world: a phosphor CRT. The palette is a 16-colour
+ * ANSI terminal set — green is the system colour, amber carries score and
+ * currency, magenta is the "press start" accent, cyan is information.
+ * The page is single-theme on purpose (a terminal has no light mode).
+ */
+:root {
+  color-scheme: dark;
+  --radius: 0rem;
+
+  /* ink ramp — blue-black with a faint green bias */
+  --ink-0: #040607;
+  --ink-1: #080c0f;
+  --ink-2: #0d1317;
+  --ink-3: #131b21;
+  --ink-4: #1a242b;
+
+  /* lines */
+  --line: #1f3329;
+  --line-2: #2c4a3b;
+
+  /* ANSI */
+  --phos: #3dff8f;
+  --phos-2: #25c46a;
+  --phos-3: #145c35;
+  --amber: #ffc23d;
+  --amber-2: #b88418;
+  --magenta: #ff3eb0;
+  --magenta-2: #a3206d;
+  --cyan: #3ddcff;
+  --cyan-2: #1a7f99;
+  --violet: #a58bff;
+  --danger: #ff5a4f;
+  /* DogeOS brand yellow */
+  --doge: #fcd436;
+  --doge-2: #8a7112;
+
+  /* text */
+  --text: #d9f7e6;
+  --text-2: #9bbcab;
+  --text-3: #5f7d6d;
+
+  /* shadcn semantic tokens mapped onto the terminal */
+  --background: var(--ink-1);
+  --foreground: var(--text);
+  --card: var(--ink-2);
+  --card-foreground: var(--text);
+  --popover: var(--ink-2);
+  --popover-foreground: var(--text);
+  --primary: var(--phos);
+  --primary-foreground: #03140a;
+  --secondary: var(--ink-3);
+  --secondary-foreground: var(--text);
+  --muted: var(--ink-3);
+  --muted-foreground: var(--text-2);
+  --accent: var(--ink-4);
+  --accent-foreground: var(--text);
+  --destructive: var(--danger);
+  --destructive-foreground: #1a0302;
+  --border: var(--line);
+  --input: var(--line-2);
+  --ring: var(--phos);
+  --chart-1: var(--phos);
+  --chart-2: var(--amber);
+  --chart-3: var(--magenta);
+  --chart-4: var(--cyan);
+  --chart-5: var(--violet);
+  --sidebar: var(--ink-1);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--phos);
+  --sidebar-primary-foreground: #03140a;
+  --sidebar-accent: var(--ink-3);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--phos);
+
+  /* legacy names still read by retained components */
+  --neon-pink: var(--magenta);
+  --neon-cyan: var(--cyan);
+  --neon-green: var(--phos);
+  --neon-violet: var(--violet);
+
+  --glow-phos: 0 0 10px rgb(61 255 143 / 0.45);
+  --glow-amber: 0 0 10px rgb(255 194 61 / 0.45);
+  --glow-magenta: 0 0 12px rgb(255 62 176 / 0.5);
+}
+
+/*
+ * Light theme: the same terminal printed on paper. The ink ramp inverts to
+ * warm off-whites and the ANSI accents darken so they hold contrast on it.
+ * Set by the header theme switch via <html data-theme="light">.
+ */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --ink-0: #fbf9f3;
+  --ink-1: #f1ede2;
+  --ink-2: #fbf9f3;
+  --ink-3: #e7e2d4;
+  --ink-4: #dcd6c5;
+
+  --line: #cfc8b4;
+  --line-2: #aea48a;
+
+  --phos: #0e8045;
+  --phos-2: #0b6a39;
+  --phos-3: #8fcaa7;
+  --amber: #9a6200;
+  --amber-2: #d9a441;
+  --magenta: #b8166f;
+  --magenta-2: #e38dbd;
+  --cyan: #07708c;
+  --cyan-2: #7cc2d6;
+  --violet: #5b41c9;
+  --danger: #c1302a;
+  --doge: #8f6d00;
+  --doge-2: #e8c64a;
+
+  --text: #15211b;
+  --text-2: #3e5347;
+  --text-3: #6d7d73;
+
+  --primary-foreground: #fbf9f3;
+  --destructive-foreground: #fbf9f3;
+  --sidebar-primary-foreground: #fbf9f3;
+
+  --glow-phos: none;
+  --glow-amber: none;
+  --glow-magenta: none;
+}
+
+@theme inline {
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-ink-0: var(--ink-0);
+  --color-ink-1: var(--ink-1);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-phos: var(--phos);
+  --color-phos-2: var(--phos-2);
+  --color-phos-3: var(--phos-3);
+  --color-amber: var(--amber);
+  --color-doge: var(--doge);
+  --color-doge-2: var(--doge-2);
+  --color-amber-2: var(--amber-2);
+  --color-magenta: var(--magenta);
+  --color-magenta-2: var(--magenta-2);
+  --color-cyan: var(--cyan);
+  --color-cyan-2: var(--cyan-2);
+  --color-violet: var(--violet);
+  --color-danger: var(--danger);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-neon-pink: var(--magenta);
+  --color-neon-cyan: var(--cyan);
+  --color-neon-green: var(--phos);
+  --color-neon-violet: var(--violet);
+
+  --font-pixel: "Press Start 2P", "VT323", monospace;
+  --font-term: "VT323", "JetBrains Mono", monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-display: "Press Start 2P", "VT323", monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    overscroll-behavior-y: none;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    background-color: var(--ink-1);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(90% 60% at 50% -10%, rgb(61 255 143 / 0.07), transparent 60%),
+      radial-gradient(circle at 1px 1px, rgb(61 255 143 / 0.075) 1px, transparent 1.4px);
+    background-size:
+      100% 100%,
+      18px 18px;
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: var(--phos);
+    color: #03140a;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--phos);
+    outline-offset: 2px;
+  }
+
+  /* Square caps on every lucide icon so they sit with the pixel set. */
+  svg.lucide {
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+  }
+
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  /* Pixel scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-2) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-2);
+    border: 3px solid var(--ink-1);
+  }
+}
+
+/* ── type roles ─────────────────────────────────────────────────────────── */
+@utility font-pixel {
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+@utility font-term {
+  font-family: var(--font-term);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+@utility label-term {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* legacy alias used by retained components */
+@utility label-mono {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+@utility glow-phos {
+  text-shadow: var(--glow-phos);
+}
+@utility glow-amber {
+  text-shadow: var(--glow-amber);
+}
+@utility glow-magenta {
+  text-shadow: var(--glow-magenta);
+}
+
+@utility text-gradient {
+  color: var(--phos);
+  text-shadow: var(--glow-phos);
+}
+
+/* ── pixel geometry ─────────────────────────────────────────────────────── */
+
+/* Notched corners: the clip removes one border-width square from every
+   corner, so a solid border reads as a pixel-rounded frame. */
+@utility px-notch {
+  clip-path: polygon(
+    0 var(--notch, 3px),
+    var(--notch, 3px) var(--notch, 3px),
+    var(--notch, 3px) 0,
+    calc(100% - var(--notch, 3px)) 0,
+    calc(100% - var(--notch, 3px)) var(--notch, 3px),
+    100% var(--notch, 3px),
+    100% calc(100% - var(--notch, 3px)),
+    calc(100% - var(--notch, 3px)) calc(100% - var(--notch, 3px)),
+    calc(100% - var(--notch, 3px)) 100%,
+    var(--notch, 3px) 100%,
+    var(--notch, 3px) calc(100% - var(--notch, 3px)),
+    0 calc(100% - var(--notch, 3px))
+  );
+}
+
+@utility px-notch-2 {
+  --notch: 2px;
+}
+
+@utility px-notch-6 {
+  --notch: 6px;
+}
+
+/* A dithered 50% checker — used for disabled fills and skeletons. */
+@utility dither {
+  background-image:
+    linear-gradient(45deg, rgb(255 255 255 / 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgb(255 255 255 / 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgb(255 255 255 / 0.05) 75%);
+  background-size: 4px 4px;
+  background-position:
+    0 0,
+    0 2px,
+    2px -2px,
+    -2px 0;
+}
+
+/* Horizontal scanlines layered over a single element (screens, covers). */
+@utility scanlines {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0) 0px,
+      rgb(0 0 0 / 0) 2px,
+      rgb(0 0 0 / 0.22) 3px
+    );
+    mix-blend-mode: multiply;
+    z-index: 2;
+  }
+}
+
+@utility pixelated {
+  image-rendering: pixelated;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── components ─────────────────────────────────────────────────────────── */
+@layer components {
+  /* Framed panel — the basic surface of the whole UI. */
+  .px-panel {
+    --notch: 3px;
+    --panel-line: var(--line);
+    position: relative;
+    background: var(--ink-2);
+    border: 3px solid var(--panel-line);
+    clip-path: polygon(
+      0 var(--notch),
+      var(--notch) var(--notch),
+      var(--notch) 0,
+      calc(100% - var(--notch)) 0,
+      calc(100% - var(--notch)) var(--notch),
+      100% var(--notch),
+      100% calc(100% - var(--notch)),
+      calc(100% - var(--notch)) calc(100% - var(--notch)),
+      calc(100% - var(--notch)) 100%,
+      var(--notch) 100%,
+      var(--notch) calc(100% - var(--notch)),
+      0 calc(100% - var(--notch))
+    );
+  }
+  .px-panel[data-tone="phos"] {
+    --panel-line: var(--phos-3);
+  }
+  .px-panel[data-tone="amber"] {
+    --panel-line: #5c4310;
+  }
+  .px-panel[data-tone="magenta"] {
+    --panel-line: #5e1a42;
+  }
+  .px-panel[data-tone="cyan"] {
+    --panel-line: #124b5a;
+  }
+  .px-panel[data-tone="hot"] {
+    --panel-line: var(--phos);
+  }
+  .px-panel[data-tone="hot"] > .px-titlebar {
+    color: var(--ink-0);
+  }
+
+  /* Title strip that sits flush on top of a panel. */
+  .px-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 30px;
+    padding: 4px 10px;
+    background: var(--panel-line, var(--line));
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  /* Arcade button: hard offset shadow, presses down on active. */
+  .px-btn {
+    --btn-bg: var(--ink-3);
+    --btn-fg: var(--text);
+    --btn-line: var(--line-2);
+    --btn-shadow: #000;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 16px;
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: 2px solid var(--btn-line);
+    box-shadow:
+      inset 0 -3px 0 0 rgb(0 0 0 / 0.28),
+      3px 3px 0 0 var(--btn-shadow);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      transform 60ms steps(1),
+      box-shadow 60ms steps(1),
+      filter 120ms;
+  }
+  .px-btn:hover:not(:disabled) {
+    filter: brightness(1.12);
+  }
+  .px-btn:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: inset 0 -1px 0 0 rgb(0 0 0 / 0.28);
+  }
+  .px-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .px-btn[data-variant="primary"] {
+    --btn-bg: var(--phos);
+    --btn-fg: #03140a;
+    --btn-line: #b6ffd4;
+    --btn-shadow: var(--phos-3);
+  }
+  .px-btn[data-variant="amber"] {
+    --btn-bg: var(--amber);
+    --btn-fg: #1d1300;
+    --btn-line: #ffe5a3;
+    --btn-shadow: #5c4310;
+  }
+  .px-btn[data-variant="magenta"] {
+    --btn-bg: var(--magenta);
+    --btn-fg: #fff;
+    --btn-line: #ffb3de;
+    --btn-shadow: #4f0d34;
+  }
+  .px-btn[data-variant="cyan"] {
+    --btn-bg: var(--cyan);
+    --btn-fg: #021820;
+    --btn-line: #b5f1ff;
+    --btn-shadow: #0b3a47;
+  }
+  .px-btn[data-variant="ghost"] {
+    --btn-bg: transparent;
+    --btn-fg: var(--text);
+    --btn-line: var(--line-2);
+    box-shadow: none;
+  }
+  .px-btn[data-variant="ghost"]:hover:not(:disabled) {
+    --btn-line: var(--phos);
+    --btn-fg: var(--phos);
+    filter: none;
+  }
+  .px-btn[data-variant="ghost"]:active:not(:disabled) {
+    transform: translate(1px, 1px);
+  }
+  .px-btn[data-variant="danger"] {
+    --btn-bg: transparent;
+    --btn-fg: var(--danger);
+    --btn-line: #6b231e;
+    box-shadow: none;
+  }
+  .px-btn[data-variant="danger"]:hover:not(:disabled) {
+    --btn-bg: rgb(255 90 79 / 0.12);
+    filter: none;
+  }
+  .px-btn[data-size="sm"] {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 10px;
+    gap: 6px;
+  }
+  .px-btn[data-size="lg"] {
+    min-height: 52px;
+    padding: 0 22px;
+    font-size: 13px;
+  }
+  .px-btn[data-size="icon"] {
+    min-height: 36px;
+    width: 36px;
+    padding: 0;
+  }
+
+  /* Text input / textarea shell */
+  .px-input {
+    width: 100%;
+    background: var(--ink-0);
+    color: var(--text);
+    border: 2px solid var(--line-2);
+    padding: 10px 12px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 120ms;
+  }
+  .px-input::placeholder {
+    color: var(--text-3);
+  }
+  .px-input:focus {
+    border-color: var(--phos);
+    box-shadow: 0 0 0 1px var(--phos-3);
+  }
+  .px-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* ANSI tag: [ARCADE] */
+  .px-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    padding: 1px 6px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1.6;
+    color: var(--tag, var(--phos));
+    background: color-mix(in srgb, var(--tag, var(--phos)) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tag, var(--phos)) 45%, transparent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* ── motion ─────────────────────────────────────────────────────────────── */
+@layer utilities {
+  @keyframes px-blink {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+  .animate-blink {
+    animation: px-blink 1.05s steps(1) infinite;
+  }
+
+  @keyframes px-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-rise {
+    animation: px-rise 0.32s steps(4) both;
+  }
+  /* legacy alias */
+  .animate-float-up {
+    animation: px-rise 0.32s steps(4) both;
+  }
+  .animate-fade-in {
+    animation: px-rise 0.32s steps(4) both;
+  }
+
+  @keyframes px-flicker {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    92% {
+      opacity: 1;
+    }
+    93% {
+      opacity: 0.82;
+    }
+    94% {
+      opacity: 1;
+    }
+    97% {
+      opacity: 0.9;
+    }
+  }
+  .animate-flicker {
+    animation: px-flicker 5s linear infinite;
+  }
+
+  @keyframes px-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  .animate-marquee {
+    animation: px-marquee 38s linear infinite;
+  }
+
+  @keyframes px-bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  .animate-bob {
+    animation: px-bob 1.6s steps(2) infinite;
+  }
+
+  @keyframes px-spin-steps {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-spin-steps {
+    animation: px-spin-steps 0.9s steps(8) infinite;
+  }
+
+  @keyframes px-scan {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(100vh);
+    }
+  }
+  .animate-scan {
+    animation: px-scan 7s linear infinite;
+  }
+
+  @keyframes px-glitch {
+    0%,
+    100% {
+      transform: translate(0);
+      text-shadow:
+        2px 0 var(--magenta),
+        -2px 0 var(--cyan);
+    }
+    20% {
+      transform: translate(-1px, 1px);
+    }
+    40% {
+      transform: translate(1px, -1px);
+      text-shadow:
+        -2px 0 var(--magenta),
+        2px 0 var(--cyan);
+    }
+    60% {
+      transform: translate(0);
+    }
+  }
+  .hover-glitch:hover {
+    animation: px-glitch 0.3s steps(3) 2;
+  }
+
+  @keyframes px-pulse-frame {
+    0%,
+    100% {
+      border-color: var(--phos-3);
+    }
+    50% {
+      border-color: var(--phos);
+    }
+  }
+  .animate-pulse-frame {
+    animation: px-pulse-frame 1.4s steps(2) infinite;
+  }
+
+  @keyframes px-shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  .animate-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(61 255 143 / 0.08) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: px-shimmer 1.6s steps(12) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-blink,
+    .animate-flicker,
+    .animate-marquee,
+    .animate-bob,
+    .animate-scan,
+    .animate-pulse-frame,
+    .animate-shimmer,
+    .hover-glitch:hover {
+      animation: none !important;
+    }
+    .animate-rise,
+    .animate-float-up,
+    .animate-fade-in {
+      animation: none !important;
+      opacity: 1 !important;
+    }
+  }
+}
+
+/* ── CRT overlay (mounted once by the app shell) ────────────────────────── */
+.crt-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 45;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0) 0px,
+      rgb(0 0 0 / 0) 2px,
+      rgb(0 0 0 / 0.14) 3px
+    ),
+    radial-gradient(120% 90% at 50% 50%, transparent 62%, rgb(0 0 0 / 0.55) 100%);
+}
+.crt-overlay::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18vh;
+  background: linear-gradient(to bottom, transparent, rgb(61 255 143 / 0.035), transparent);
+  animation: px-scan 7s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .crt-overlay::after {
+    display: none;
+  }
+}
+
+/*
+ * Game preview surfaces (canvas engine + HTML5 iframe). Class names are set
+ * by the retained runtime components; only their skin lives here.
+ */
+.three-preview-wrap,
+.html5-preview-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #000;
+}
+
+.feed-game-frame--canvas .three-preview-wrap,
+.feed-game-frame--construct .html5-preview-wrap {
+  aspect-ratio: auto;
+  height: 100%;
+  width: 100%;
+}
+
+.three-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.three-preview canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  touch-action: none;
+}
+
+.html5-preview-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.player-controls {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.player-controls span,
+.preview-hud span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 2px solid var(--line-2);
+  background: rgb(4 6 7 / 0.82);
+  color: var(--text);
+  padding: 6px 9px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.preview-hud {
+  position: absolute;
+  left: 14px;
+  right: 72px;
+  bottom: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  min-height: 22px;
+  border: 2px solid var(--line-2);
+  border-bottom-width: 3px;
+  background: var(--ink-3);
+  color: var(--text);
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.fullscreen-button {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 4;
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 2px solid var(--phos);
+  background: rgb(4 6 7 / 0.85);
+  color: var(--phos);
+  box-shadow: 3px 3px 0 0 #000;
+  cursor: pointer;
+}
+
+.fullscreen-button:hover {
+  background: var(--ink-3);
+}
+
+.generated-badge {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  z-index: 4;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 2px solid var(--phos);
+  background: rgb(4 6 7 / 0.85);
+  color: var(--phos);
+  pointer-events: none;
+}
+
+.feed-game-frame {
+  position: relative;
+}
+
+.feed-game-frame:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-height: none;
+  background: #000;
+}
+
+.feed-game-frame:fullscreen .three-preview-wrap,
+.feed-game-frame:fullscreen .html5-preview-wrap {
+  width: 100vw;
+  height: 100vh;
+  max-height: none;
+  aspect-ratio: auto;
+}
+
+.feed-game-frame:fullscreen .three-preview,
+.feed-game-frame:fullscreen .three-preview canvas,
+.feed-game-frame:fullscreen iframe {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* The desktop creator bar (72px) overlays the bottom of the fullscreen frame;
+   the playfield has to stop above it. */
+@media (min-width: 1024px) {
+  .feed-game-frame:fullscreen .three-preview-wrap,
+  .feed-game-frame:fullscreen .html5-preview-wrap,
+  .feed-game-frame:fullscreen .three-preview,
+  .feed-game-frame:fullscreen .three-preview canvas,
+  .feed-game-frame:fullscreen iframe {
+    height: calc(100vh - 72px);
+  }
+}
+
+.feed-game-frame .fullscreen-button:not(.fullscreen-button--play-page) {
+  display: none;
+}
+
+.fullscreen-button--play-page {
+  z-index: 12;
+  width: 50px;
+  height: 50px;
+}
+
+.feed-game-frame--leaderboard-open:not(:fullscreen) .fullscreen-button--play-page {
+  right: 92px;
+}
+
+/* Editor live preview: the game surface fills the whole pane. */
+.editor-game-frame .three-preview-wrap,
+.editor-game-frame .html5-preview-wrap {
+  aspect-ratio: auto;
+  height: 100%;
+  width: 100%;
+}
+
+/* ── Light theme overrides for values the palette tokens don't reach ───── */
+:root[data-theme="light"] body {
+  background-image:
+    radial-gradient(90% 60% at 50% -10%, rgb(14 128 69 / 0.06), transparent 60%),
+    radial-gradient(circle at 1px 1px, rgb(21 33 27 / 0.08) 1px, transparent 1.4px);
+}
+:root[data-theme="light"] ::selection {
+  color: #fbf9f3;
+}
+:root[data-theme="light"] .px-panel[data-tone="amber"] {
+  --panel-line: var(--amber-2);
+}
+:root[data-theme="light"] .px-panel[data-tone="magenta"] {
+  --panel-line: var(--magenta-2);
+}
+:root[data-theme="light"] .px-panel[data-tone="cyan"] {
+  --panel-line: var(--cyan-2);
+}
+:root[data-theme="light"] .px-btn {
+  --btn-shadow: var(--line-2);
+}
+:root[data-theme="light"] .px-btn[data-variant="primary"] {
+  --btn-fg: #fbf9f3;
+  --btn-line: var(--phos-2);
+  --btn-shadow: #064024;
+}
+:root[data-theme="light"] .px-btn[data-variant="amber"] {
+  --btn-fg: #fbf9f3;
+  --btn-line: #7a4d00;
+  --btn-shadow: #4d3100;
+}
+:root[data-theme="light"] .px-btn[data-variant="magenta"] {
+  --btn-line: #8e0f55;
+  --btn-shadow: #5a0936;
+}
+:root[data-theme="light"] .px-btn[data-variant="cyan"] {
+  --btn-fg: #fbf9f3;
+  --btn-line: #055a70;
+  --btn-shadow: #033847;
+}
+:root[data-theme="light"] .px-btn[data-variant="danger"] {
+  --btn-line: #e0a19c;
+}
+:root[data-theme="light"] .crt-overlay {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0) 0px,
+    rgb(0 0 0 / 0) 2px,
+    rgb(0 0 0 / 0.035) 3px
+  );
+}
+:root[data-theme="light"] .crt-overlay::after {
+  display: none;
+}
+
+/* ── Create page: hero banner, stepper and build-mode cards ─────────────── */
+.create-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(55% 140% at 0% 0%, color-mix(in oklab, var(--doge) 20%, transparent), transparent 62%),
+    radial-gradient(45% 130% at 100% 100%, color-mix(in oklab, var(--magenta) 18%, transparent), transparent 62%),
+    radial-gradient(35% 90% at 70% 0%, color-mix(in oklab, var(--cyan) 10%, transparent), transparent 70%),
+    var(--ink-2);
+}
+/* Faint pixel grid over the glow. */
+.create-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--text) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--text) 5%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to bottom, black, transparent 90%);
+}
+/* A slow light sweep across the banner. */
+.create-hero::after {
+  content: "";
+  position: absolute;
+  inset: -50% auto -50% -30%;
+  width: 30%;
+  z-index: -1;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--doge) 12%, transparent), transparent);
+  transform: skewX(-20deg);
+  animation: create-sweep 7s ease-in-out infinite;
+}
+@keyframes create-sweep {
+  0%,
+  15% {
+    left: -30%;
+  }
+  60%,
+  100% {
+    left: 130%;
+  }
+}
+
+.text-gradient-doge {
+  background: linear-gradient(90deg, var(--doge), var(--amber) 45%, var(--magenta));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.doge-halo {
+  box-shadow:
+    0 0 0 3px var(--doge),
+    0 0 32px color-mix(in oklab, var(--doge) 55%, transparent);
+}
+@keyframes doge-halo-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+  }
+}
+.doge-halo-pulse {
+  animation: doge-halo-pulse 2.8s ease-in-out infinite;
+}
+
+/* Build-mode card: colour comes from --tier. */
+.tier-card {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(160deg, color-mix(in oklab, var(--tier) 14%, transparent), transparent 55%),
+    var(--ink-2);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+.tier-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--tier), color-mix(in oklab, var(--tier) 20%, transparent));
+}
+.tier-card:hover:not(:disabled) {
+  transform: translateY(-3px);
+  border-color: var(--tier);
+  box-shadow: 0 14px 34px -14px color-mix(in oklab, var(--tier) 70%, transparent);
+}
+.tier-icon {
+  background: color-mix(in oklab, var(--tier) 16%, transparent);
+  border-color: color-mix(in oklab, var(--tier) 55%, transparent);
+  color: var(--tier);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .create-hero::after,
+  .doge-halo-pulse {
+    animation: none;
+  }
+  .tier-card:hover:not(:disabled) {
+    transform: none;
+  }
+}

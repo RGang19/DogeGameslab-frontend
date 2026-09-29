@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#080c0f" />
+    <script>
+      try {
+        if (localStorage.getItem("dogegame-theme") === "light") {
+          document.documentElement.dataset.theme = "light";
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", "#f1ede2");
+        }
+      } catch (e) {}
+    </script>
+    <title>DogeGameLab</title>
+    <meta
+      name="description"
+      content="Describe a game, and DogeGame's AI agents build a playable version you can publish and share."
+    />
+    <meta name="author" content="DogeGame" />
+    <meta property="og:title" content="DogeGameLab" />
+    <meta
+      property="og:description"
+      content="Describe a game, and DogeGame's AI agents build a playable version you can publish and share."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="/brand/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/brand/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/brand/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="256x256" href="/brand/apple-touch-icon-256x256.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=JetBrains+Mono:wght@400;500;700;800&display=swap"
+    />
+    <!-- Faces the generated/canvas games may reference by name. -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Audiowide&family=Bebas+Neue&family=Black+Ops+One&family=Bungee&family=Exo+2:wght@800;900&family=Inter:wght@400;600;800&family=Orbitron:wght@500;700;900&family=Russo+One&family=Space+Grotesk:wght@400;700&family=Space+Mono:wght@400;700&display=swap"
+      media="print"
+      onload="this.media = 'all'"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

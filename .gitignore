@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output and caches
+dist/
+.tanstack/
+.vite/
+
+# Generated in dev by `npm run dev:css`
+public/dev-styles.css
+
+# Secrets — never commit; copy .env.example instead
+.env
+.env.*
+!.env.example
+
+# OS / editor / logs
+.DS_Store
+*.log
