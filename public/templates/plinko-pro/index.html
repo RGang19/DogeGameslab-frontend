@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Pro Plinko - A physics-based casino game">
+    <title>Pro Plinko | High Stakes Physics</title>
+    <link rel="stylesheet" href="style.css">
+   
+</head>
+<body class="theme-default">
+
+<!-- Splash Screen -->
+<div id="splashScreen">
+    <div class="splash-logo">Plinko<span>Pro</span></div>
+    <div class="loading-bar">
+        <div class="loading-progress"></div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="app-container">
+    <div class="game-wrapper">
+        <!-- Game Board -->
+        <div class="canvas-container" id="canvasWrapper">
+            <div class="jackpot-ticker">
+                <span>🏆 JP:</span>
+                <span id="jackpotDisplay">0.00</span>
+            </div>
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-panel">
+            
+            <!-- Header: Logo + Toggles -->
+            <div class="panel-header">
+                <div class="logo">Plinko<span style="color:white">Pro</span></div>
+                <div class="toggles-row">
+                    <!-- Ghost Mode -->
+                    <div class="toggle-wrapper" title="Instant Results">
+                        <span class="toggle-label">GHOST</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="ghostToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <!-- Sound -->
+                    <div class="toggle-wrapper">
+                        <span class="toggle-label">SOUND</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="soundToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- XP Level Bar -->
+            <div class="xp-container">
+                <div class="xp-info">
+                    <span>Level <span id="levelDisplay">1</span></span>
+                    <span id="xpText">0 / 1000 XP</span>
+                </div>
+                <div class="xp-bar-bg">
+                    <div class="xp-bar-fill" id="xpFill"></div>
+                </div>
+            </div>
+
+            <!-- Balance Card -->
+            <div class="balance-card">
+                <div class="balance-title">CURRENT BALANCE</div>
+                <div class="balance-amount"><span class="currency">$</span><span id="balanceDisplay">0.00</span></div>
+                <button id="dailyBonusBtn" class="bonus-btn" title="Get Free Coins">🎁 BONUS</button>
+            </div>
+
+            <!-- Amount -->
+            <div class="panel-section">
+                <span class="label">Bet Amount</span>
+                <div class="input-group">
+                    <input type="number" id="betAmount" value="10" min="1">
+                    <button class="btn-half" id="btnHalf">½</button>
+                    <button class="btn-half" id="btnDouble">2x</button>
+                </div>
+            </div>
+
+            <!-- Ball Size Control (SLIDER) -->
+            <div class="panel-section">
+                <span class="label">Ball Size (4-15 px)</span>
+                <div class="slider-display-group">
+                    <input type="range" id="ballSizeSlider" class="range-slider" min="4" max="15" step="1" aria-label="Ball Size Slider">
+                    <span id="ballSizeDisplay" class="slider-display">10</span>
+                </div>
+            </div>
+
+            <!-- Configs -->
+            <div class="panel-section">
+                <div class="btn-group">
+                    <button class="risk-btn" data-risk="low">Low</button>
+                    <button class="risk-btn active" data-risk="medium">Medium</button>
+                    <button class="risk-btn" data-risk="high">High</button>
+                </div>
+                <div class="btn-group" style="margin-top:5px;">
+                    <button class="row-btn" data-rows="8">8 Rows</button>
+                    <button class="row-btn active" data-rows="12">12 Rows</button>
+                    <button class="row-btn" data-rows="16">16 Rows</button>
+                </div>
+            </div>
+
+            <!-- Multi Drop Actions -->
+            <div class="panel-section">
+                <button id="dropBtn" class="btn-primary">DROP (Space)</button>
+                <div class="multi-drop-grid">
+                    <button class="multi-btn" data-count="10">10 Balls</button>
+                    <button class="multi-btn" data-count="50">50 Balls</button>
+                    <button class="multi-btn" data-count="100">100 Balls</button>
+                </div>
+                <button id="autoBtn" class="">AUTO: OFF</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="panel-section">
+                <span class="label">Recent History</span>
+                <div class="history-feed" id="historyFeed">
+                    <!-- JS Injected -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-menu">
+            <button class="footer-btn" onclick="ui.showModal('skins')"><span>🎨</span> Skins</button>
+            <button class="footer-btn" onclick="ui.showModal('stats')"><span>📊</span> Stats</button>
+            <button class="footer-btn" onclick="ui.showModal('settings')"><span>⚙️</span> Settings</button>
+            <button class="footer-btn" onclick="ui.showModal('rules')"><span>📜</span> Rules</button>
+            <button class="footer-btn" onclick="ui.showModal('fairness')"><span>⚖️</span> Fairness</button>
+        </div>
+    </footer>
+</div>
+
+<!-- Modal Template -->
+<div id="infoModal" class="modal-overlay">
+    <div class="modal">
+        <h2 id="modalTitle">Title</h2>
+        <div id="modalContent">Content</div>
+        <button onclick="ui.closeModal()" style="margin-top:1rem; width:100%; background:var(--bg-controls); padding: 12px; border:none; border-radius:8px; cursor:pointer; color:white; font-weight:bold;">Close</button>
+    </div>
+</div>
+
+
+
+<script  src="script.js"></script>
+</body>
+</html>

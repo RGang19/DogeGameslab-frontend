@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spin Wheel | Number Betting Casino</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<!-- 1. SPLASH SCREEN -->
+<div id="splashScreen" class="full-screen">
+    <div class="splash-logo"><i class="fas fa-crown"></i> Spin Wheel</div>
+</div>
+
+<!-- 2. GAME MENU -->
+<div id="gameMenu" class="full-screen" style="display:none;">
+    <div class="menu-bg-fx"><div class="particles"></div></div>
+    
+    <div class="menu-content">
+        <!-- Icon 200x200 Placeholder -->
+        <div class="game-icon-box">
+            <img src="assets/loading.jpg">
+        </div>
+
+        <button class="menu-btn btn-play" onclick="Menu.startGame()">PLAY GAME</button>
+        <button class="menu-btn btn-rules" onclick="Menu.showRules()">HOW TO PLAY</button>
+    </div>
+</div>
+
+<!-- 3. HOW TO PLAY MODAL -->
+<div class="modal-overlay" id="rulesModal">
+    <div class="modal-content">
+        <h2 style="color:var(--gold-primary)">HOW TO PLAY</h2>
+        <ul class="rules-list">
+            <li>Select your lucky number (1-10).</li>
+            <li>Choose your Risk Level (Standard, Balanced, High).</li>
+            <li>Place your bet amount.</li>
+            <li>Spin the Wheel! If it lands on your number, you win based on the multiplier.</li>
+            <li>Unlock VIP Gold Wheel by watching ads.</li>
+        </ul>
+        <button class="spin-btn" style="padding:10px;" onclick="Menu.closeRules()">CLOSE</button>
+    </div>
+</div>
+
+<!-- 4. MAIN GAME CONTAINER -->
+<div class="app-container" id="mainGame">
+    <!-- Header -->
+    <header>
+        <div class="logo"><i class="fas fa-crown"></i> Spin Wheel</div>
+        <div style="display: flex; gap: 15px;">
+            <button class="wallet-box" onclick="game.watchAd('money')" style="font-size: 0.9rem; border-color: #444; color: #fff;">
+                <i class="fas fa-plus-circle" style="color:#2ecc71"></i> Add Funds
+            </button>
+            <div class="wallet-box">
+                <i class="fas fa-coins"></i> ₹<span id="balanceDisplay">1000</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Left Side: History Panel -->
+    <div class="sidebar-left">
+        <div class="history-header">
+            <span><i class="fas fa-history"></i> Activity Log</span>
+            <button onclick="UI.clearHistory()" style="background:transparent; border:none; color:#666; cursor:pointer; font-size:0.8rem;">Clear</button>
+        </div>
+        <div class="history-list" id="historyLog">
+            <!-- Logs injected here -->
+        </div>
+    </div>
+
+    <!-- Center: Game Area -->
+    <div class="game-area">
+        <div class="wheel-wrapper">
+            <div class="wheel-pointer"></div>
+            <canvas id="wheelCanvas" width="600" height="600"></canvas>
+            <div class="center-nut">👑</div>
+        </div>
+    </div>
+
+    <!-- Right Side: Controls -->
+    <div class="sidebar-right">
+        <!-- Wheel Skin Selector -->
+        <div class="panel-section" style="padding:10px; display:flex; gap:10px;">
+            <button onclick="game.setSkin('classic')" style="flex:1; background:#222; border:1px solid #444; color:#fff; padding:5px; cursor:pointer;">Classic</button>
+            <button onclick="game.tryVip()" style="flex:1; background:linear-gradient(45deg, #333, #000); border:1px solid var(--gold-dark); color:var(--gold-primary); padding:5px; cursor:pointer;">
+                <i class="fas fa-lock" id="vipLockIcon"></i> VIP Gold
+            </button>
+        </div>
+
+        <!-- 1. Select Number -->
+        <div class="panel-section">
+            <div class="panel-header">1. Select Number</div>
+            <div class="number-grid" id="numberGrid"></div>
+        </div>
+
+        <!-- 2. Select Risk -->
+        <div class="panel-section">
+            <div class="panel-header">
+                2. Risk Level <span id="payoutDisplay" style="font-size:0.8rem; color:#888;"></span>
+            </div>
+            <div class="risk-options">
+                <button class="risk-btn" onclick="game.setRisk('low')" id="riskLow">
+                    <div><strong>Standard</strong><small>Single Number Win</small></div>
+                    <span class="multiplier-tag">x1.5</span>
+                </button>
+                <button class="risk-btn" onclick="game.setRisk('med')" id="riskMed">
+                    <div><strong>Balanced</strong><small>Single Number Win</small></div>
+                    <span class="multiplier-tag">x3.0</span>
+                </button>
+                <button class="risk-btn active" onclick="game.setRisk('high')" id="riskHigh">
+                    <div><strong>High Risk</strong><small>Single Number Win</small></div>
+                    <span class="multiplier-tag">x10.0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. Bet Amount -->
+        <div class="panel-section">
+            <div class="panel-header">3. Place Bet</div>
+            <div class="bet-chips" id="chipContainer">
+                <div class="chip" onclick="game.setBet(10)">10</div>
+                <div class="chip active" onclick="game.setBet(50)">50</div>
+                <div class="chip" onclick="game.setBet(100)">100</div>
+                <div class="chip" onclick="game.setBet(500)">500</div>
+                <div class="chip" onclick="game.setBet(1000)">1k</div>
+            </div>
+            <div style="text-align:center; margin-top:10px; color:#888;">
+                Bet: <span id="currentBetDisplay" style="color:#fff; font-weight:bold;">₹50</span>
+            </div>
+        </div>
+
+        <button class="spin-btn" id="spinBtn" onclick="game.spin()">SPIN WHEEL</button>
+
+        <div class="ad-banner" title="AdSpace">
+            <div>
+                <span style="display:block; font-size:10px; color:#666;">SPONSORED</span>
+                <i class="fas fa-ad" style="font-size:20px;"></i>
+                <div style="font-size:9px; color:#444;">Side Ad Banner</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <input type="checkbox" id="turboMode" class="toggle-control">
+        <label for="turboMode" class="modern-toggle"><i class="fas fa-bolt"></i> Turbo</label>
+
+        <input type="checkbox" id="soundToggle" class="toggle-control" checked>
+        <label for="soundToggle" class="modern-toggle"><i class="fas fa-volume-up"></i> Sound</label>
+
+        <span style="margin-left: auto; font-size: 0.7rem; color: #444;">Ver 3.5</span>
+    </footer>
+</div>
+
+<!-- Ad Modal -->
+<div class="modal-overlay" id="adModal">
+    <div class="modal-content">
+        <h2 style="color:var(--gold-primary)">SPONSOR AD</h2>
+        <p>Watch for 10s to <span id="adReason">earn reward</span>...</p>
+        <div class="ad-banner-large" id="adContainer">Advertisement Area</div>
+        <div class="timer-container" id="timerSection">
+            <div class="ad-timer" id="adTimer">10</div>
+            <div style="font-size: 0.8rem; color:#666; margin-bottom:10px;">Seconds Remaining</div>
+            <div style="height:4px; background:#333; width:100%;">
+                <div id="adProgress" style="height:100%; width:0%; background:var(--gold-primary); transition:width 1s linear;"></div>
+            </div>
+        </div>
+        <button id="adCloseBtn" class="spin-btn" style="display:none; padding:10px; font-size:1rem; background: var(--gold-primary); color: #000; margin-top:10px;" onclick="game.closeAd()">CLOSE & CLAIM REWARD</button>
+    </div>
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
