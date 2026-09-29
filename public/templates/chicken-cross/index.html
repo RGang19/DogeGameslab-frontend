@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chicken Road Cross Casino 🐔</title>
+
+    
+    <!-- --- GOOGLE ADSENSE SCRIPT --- -->
+    <!-- Replace 'YOUR_PUBLISHER_ID' with your actual ID (e.g., ca-pub-1234567890) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUBLISHER_ID" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+   
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash-screen">
+    <div class="splash-content">
+        <div class="splash-logo"><img src="assets/chicken.png" width="100" height="140"></div>
+        <h1 class="splash-title">Chicken Cross</h1>
+        <div class="splash-subtitle">GAME</div>
+        <div class="loading-container">
+            <div class="loading-bar-fill"></div>
+        </div>
+        <p style="color:#666; font-size:0.8rem; margin-top:10px;">Loading Game...</p>
+    </div>
+</div>
+
+<!-- CUSTOM MODAL -->
+<div id="custom-modal" class="overlay hidden">
+    <div class="panel" style="min-width:320px; border-color:var(--accent-color);">
+        <span id="modal-icon" class="modal-icon">⚠️</span>
+        <h2 id="modal-title" style="margin-bottom:10px; color:#fff;">NOTICE</h2>
+        <p id="modal-msg" style="font-size:1.1rem; color:#ccc;">Message goes here</p>
+        
+        <div class="modal-buttons">
+            <button id="btn-modal-cancel" class="btn-3d btn-danger hidden" onclick="UI.closeModal()">CANCEL</button>
+            <button id="btn-modal-ok" class="btn-3d btn-primary" onclick="UI.confirmModal()">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- AUDIO -->
+<script>
+    
+</script>
+
+<!-- HEADER -->
+<header>
+    <div class="logo">Chicken Cross 🐔</div>
+    <div class="balance-group">
+        <div class="balance-display">₹<span id="ui-balance">0</span></div>
+        <button class="btn-free-money" onclick="Ads.watchAd('money')">📺 +₹100</button>
+    </div>
+    <div class="header-icons">
+        <button onclick="Game.toggleLeaderboard()" aria-label="Leaderboard">🏆</button>
+        <button onclick="Game.toggleSettings()" aria-label="Settings">⚙️</button>
+    </div>
+</header>
+
+<!-- GAME AREA -->
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    <div id="hud">
+        <div class="hud-multiplier" id="hud-mult">1.00x</div>
+        <div class="hud-msg" id="hud-msg">Nice!</div>
+    </div>
+    <div id="start-overlay" class="overlay">
+        <div class="panel">
+            <h1>Chicken Road Cross</h1>
+            <p>Bet & Cross the road!</p>
+            <p style="color:var(--accent-color)">Win starts at 1.20x multiplier!</p>
+            <button class="btn-3d btn-primary" onclick="Game.startGame()">START ROUND</button>
+            <div class="disclaimer">Simulation only. No real money used.</div>
+        </div>
+    </div>
+    <div id="crash-overlay" class="overlay hidden">
+        <div class="panel">
+            <h1 style="color:var(--danger-color)">CRASHED! 💥</h1>
+            <p>Multiplier reached: <span id="crash-mult" style="font-weight:bold; color:var(--accent-color)">1.2x</span></p>
+            <p>Lost Bet: ₹<span id="crash-loss">0</span></p>
+            <p style="font-size:0.9rem; color:#aaa; margin-top:20px;">Short on cash?</p>
+            <button class="btn-3d btn-secondary" onclick="Ads.watchAd('money')">📺 Watch Ad (+₹100)</button>
+            <button class="btn-3d btn-danger" onclick="Game.resetGame()">Try Again</button>
+        </div>
+    </div>
+    <div id="win-overlay" class="overlay hidden">
+        <div class="panel">
+            <h1 style="color:var(--success-color)">CASHOUT! 💰</h1>
+            <p>Won: ₹<span id="win-amount">0</span></p>
+            <p>Multiplier: <span id="win-mult">2.5x</span></p>
+            <button class="btn-3d btn-primary" onclick="Game.resetGame()">New Round</button>
+        </div>
+    </div>
+    
+    <!-- AD SIMULATION OVERLAY (UPDATED FOR ADSENSE) -->
+    <div id="ad-overlay" class="overlay hidden">
+        <div class="panel">
+            <h2>ADVERTISEMENT</h2>
+            
+            <!-- GOOGLE AD SLOT -->
+            <div id="google-ad-slot">
+                <!-- PASTE YOUR GOOGLE ADSENSE <ins> CODE HERE -->
+                <p>Google Ad Placeholder<br>(Paste code in HTML)</p>
+                <!-- Example:
+                <ins class="adsbygoogle"
+                     style="display:inline-block;width:300px;height:250px"
+                     data-ad-client="ca-pub-XXXXXX"
+                     data-ad-slot="XXXXXX"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> 
+                -->
+            </div>
+
+            <p>Reward in...</p>
+            <div id="ad-progress-bar"><div id="ad-progress-fill"></div></div>
+            <p id="ad-timer">5s</p>
+        </div>
+    </div>
+    
+    <div id="settings-overlay" class="overlay hidden">
+        <div class="panel">
+            <h2>Settings</h2>
+            <p>Themes (Watch Ad to Unlock)</p>
+            <div class="theme-grid" id="theme-container"></div>
+            <button class="btn-3d btn-secondary" onclick="Ads.watchAd('theme')">📺 Unlock Random Theme</button>
+            <hr style="border-color:#444; margin: 20px 0;">
+            <button class="btn-3d btn-primary" onclick="Game.toggleSettings()">Close</button>
+            <button class="btn-3d btn-danger" style="margin-top:10px; font-size:0.8rem; padding: 8px;" onclick="Game.resetData()">Reset Data</button>
+        </div>
+    </div>
+    <div id="leaderboard-overlay" class="overlay hidden">
+        <div class="panel">
+            <h2>🏆 Leaderboard</h2>
+            <ul id="leaderboard-list" style="text-align:left; list-style:none; padding:0; height: 200px; overflow-y:auto; font-size:0.9rem;"></ul>
+            <button class="btn-3d btn-primary" onclick="Game.toggleLeaderboard()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONTROLS -->
+<div id="controls-area">
+    <div id="bet-ui" class="bet-row">
+        <button class="btn-3d btn-bet" onclick="Game.setBet(10)">₹10</button>
+        <button class="btn-3d btn-bet" onclick="Game.setBet(20)">₹20</button>
+        <button class="btn-3d btn-bet" onclick="Game.setBet(50)">₹50</button>
+        <button class="btn-3d btn-bet" onclick="Game.setBet(100)">₹100</button>
+        <input type="number" id="custom-bet" value="10" min="1" onchange="Game.setBet(this.value)">
+    </div>
+    <div class="game-controls">
+        <div class="d-pad">
+            <button class="d-btn" id="btn-left" onpointerdown="Input.action('left')">⬅️</button>
+            <button class="d-btn" id="btn-right" onpointerdown="Input.action('right')">➡️</button>
+        </div>
+        <div class="cashout-container">
+            <button id="btn-cashout" class="btn-3d cashout-btn" onclick="Game.cashOut()" disabled>
+                <span style="font-size:0.9rem; opacity:0.8; margin-bottom:2px">CASH OUT</span>
+                <span id="cashout-val" style="font-weight:900; font-size:1.4rem">LOCKED</span>
+            </button>
+        </div>
+        <div class="d-pad">
+            <button class="jump-btn" id="btn-jump" onpointerdown="Input.action('up')">🐔</button>
+        </div>
+    </div>
+</div>
+
+
+<script  src="script.js"></script>
+</body>
+</html>

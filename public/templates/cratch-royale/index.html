@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scratch Royale - Casino Simulator</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+   
+</head>
+<body class="h-screen flex flex-col text-sm md:text-base overflow-hidden">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="loader-ring"></div>
+        <h1 class="splash-title">SCRATCH ROYALE</h1>
+        <div class="splash-subtitle">Loading Game...</div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="glass-panel p-3 flex justify-between items-center z-50 relative shrink-0">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-dice text-theme-primary text-2xl"></i>
+            <div>
+                <h1 class="font-bold tracking-wider leading-none">SCRATCH<span class="text-theme-primary">ROYALE</span></h1>
+                <span class="text-xs text-gray-400">CASINO SIM</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="bg-black/50 px-3 py-1 rounded-full border border-gray-700 flex items-center gap-2 cursor-pointer hover:border-white transition" onclick="app.ui.openWallet()">
+                <i class="fas fa-coins text-theme-primary"></i>
+                <span id="nav-balance" class="font-mono font-bold text-lg text-white">0</span>
+                <i class="fas fa-plus-circle text-xs text-green-400"></i>
+            </div>
+            <button onclick="app.ui.openThemes()" class="text-gray-400 hover:text-white"><i class="fas fa-palette text-xl"></i></button>
+            <button onclick="app.ui.toggleSettings()" class="text-gray-400 hover:text-white"><i class="fas fa-cog text-xl"></i></button>
+        </div>
+    </nav>
+
+    <!-- Mobile Floating History Button -->
+    <button onclick="app.ui.toggleMobileSidebar()" class="md:hidden fixed top-24 left-2 z-40 bg-gray-800 border border-gray-600 text-white p-3 rounded-full shadow-lg btn-push">
+        <i class="fas fa-history text-theme-primary text-xl"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="flex-grow relative flex flex-col md:flex-row overflow-hidden">
+        
+        <!-- Left Sidebar (Bulk Buy & History) -->
+        <aside id="left-sidebar" class="flex flex-col w-64 md:w-72 glass-panel m-2 rounded-xl p-4 overflow-hidden shrink-0 z-[60] fixed inset-y-0 left-0 md:relative md:inset-auto md:translate-x-0 transition-transform duration-300 transform -translate-x-[120%] md:z-40 bg-[#0f0f13] md:bg-transparent">
+            
+            <!-- Mobile Close Header -->
+            <div class="md:hidden flex justify-between items-center mb-4 pb-2 border-b border-gray-800">
+                <h2 class="text-xl font-bold text-white">Game Menu</h2>
+                <button onclick="app.ui.toggleMobileSidebar()" class="text-red-500 text-xl"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Bulk Buy Section -->
+            <div class="mb-4 bg-gray-800/50 p-3 rounded-xl border border-gray-700 shrink-0">
+                <h3 class="text-xs font-bold text-theme-primary uppercase mb-2 flex items-center gap-2">
+                    <i class="fas fa-shopping-cart"></i> Bulk Buy Cards
+                </h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="app.game.buyBatch(5)" class="bg-gray-700 hover:bg-gray-600 p-2 rounded text-xs font-bold border border-gray-600 btn-push">
+                        Buy 5
+                    </button>
+                    <button onclick="app.game.buyBatch(10)" class="bg-gray-700 hover:bg-gray-600 p-2 rounded text-xs font-bold border border-gray-600 btn-push">
+                        Buy 10
+                    </button>
+                    <button onclick="app.game.buyBatch(20)" class="bg-gray-700 hover:bg-gray-600 p-2 rounded text-xs font-bold border border-gray-600 btn-push">
+                        Buy 20
+                    </button>
+                    <button onclick="app.game.buyBatch(50)" class="bg-gray-700 hover:bg-gray-600 p-2 rounded text-xs font-bold border border-gray-600 btn-push">
+                        Buy 50
+                    </button>
+                    <button onclick="app.game.buyBatch(100)" class="col-span-2 bg-gradient-to-r from-yellow-700 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-500 p-2 rounded text-xs font-bold border border-yellow-500 btn-push">
+                        Buy 100 Cards
+                    </button>
+                </div>
+                <div class="text-[10px] text-center mt-2 text-gray-500">
+                    Price per card: <span class="text-theme-primary">10</span> (Standard)
+                </div>
+            </div>
+
+            <div class="h-px bg-gray-700 my-2 shrink-0"></div>
+
+            <!-- History Section -->
+            <h3 class="text-gray-400 text-xs font-bold uppercase mb-2 shrink-0"><i class="fas fa-history mr-1"></i> Win/Loss History</h3>
+            <div id="session-log" class="flex-grow flex flex-col gap-2 text-xs overflow-y-auto pr-1 pb-10 md:pb-0">
+                <div class="text-gray-500 italic text-center py-4">No history yet...</div>
+            </div>
+        </aside>
+
+        <!-- Center Stage -->
+        <section class="flex-grow flex flex-col items-center justify-center p-2 relative">
+            
+            <!-- Jackpot Ticker -->
+            <div class="mb-4 bg-gradient-to-r from-transparent via-purple-900/50 to-transparent w-full text-center py-1">
+                <span class="text-xs text-purple-300 uppercase tracking-widest">Grand Jackpot</span>
+                <div id="jackpot-display" class="text-2xl font-mono font-bold text-pink-500 drop-shadow-lg">Loading...</div>
+            </div>
+
+            <!-- Game Area -->
+            <div class="relative group scale-100 transition-transform">
+                <!-- Result Message Overlay -->
+                <div id="result-overlay" class="hidden absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md rounded-xl transition-all duration-300 border border-gray-700">
+                    <h2 id="result-title" class="text-3xl font-bold text-white mb-2 transform scale-0 transition-transform duration-500">BIG WIN!</h2>
+                    <div id="result-amount" class="text-4xl font-mono text-theme-primary font-bold mb-4 drop-shadow-md">0</div>
+                    <button onclick="app.game.reset()" class="bg-gray-800 border border-gray-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-gray-700 btn-push">PLAY AGAIN</button>
+                </div>
+
+                <!-- Canvas Container -->
+                <div id="scratch-container" class="bg-gray-800 relative border-2 border-theme-primary">
+                    <!-- Underlayer (Prize Symbols) -->
+                    <div id="card-underlayer" class="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-1 p-2 bg-gray-900">
+                        <!-- Cells generated by JS -->
+                    </div>
+                    <!-- Canvas (Scratch Surface) -->
+                    <canvas id="scratch-canvas" width="300" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Provably Fair Hash -->
+            <div class="mt-2 text-[10px] text-gray-600 font-mono" id="fairness-hash">Waiting for round...</div>
+
+        </section>
+
+        <!-- Right Sidebar (Leaderboard) -->
+        <aside class="hidden xl:flex flex-col w-64 glass-panel m-2 rounded-xl p-4 shrink-0">
+            <h3 class="text-gray-400 text-xs font-bold uppercase mb-3"><i class="fas fa-trophy text-theme-primary mr-1"></i> Leaderboard</h3>
+            <div id="leaderboard-list" class="flex flex-col gap-2">
+                <!-- Leaderboard items -->
+            </div>
+        </aside>
+    </main>
+
+    <!-- Bottom Controls -->
+    <footer class="glass-panel p-4 z-40 shrink-0">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <!-- Bet Controls -->
+            <div class="flex items-center gap-4 bg-black/30 p-2 rounded-lg border border-gray-700 flex-grow md:flex-grow-0">
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-gray-400 uppercase">Bet Amount</span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="app.game.adjustBet(-10)" class="w-8 h-8 rounded bg-gray-700 hover:bg-gray-600 text-xl font-bold">-</button>
+                        <!-- Updated Input Field for Manual Entry -->
+                        <input type="number" id="bet-input" value="10" min="10" max="10000" onchange="app.game.setBet(this.value)" class="w-20 bg-transparent text-center font-mono font-bold text-white border-b border-gray-600 focus:outline-none focus:border-theme-primary">
+                        <button onclick="app.game.adjustBet(10)" class="w-8 h-8 rounded bg-gray-700 hover:bg-gray-600 text-xl font-bold">+</button>
+                    </div>
+                </div>
+                
+                <div class="h-8 w-px bg-gray-700"></div>
+
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-gray-400 uppercase">Card Type</span>
+                    <select id="card-type-select" onchange="app.game.changeCardType(this.value)" class="bg-gray-900 border border-gray-700 text-xs rounded p-1 text-white focus:outline-none">
+                        <option value="standard">Standard (Match 3)</option>
+                        <option value="silver">Silver 7s (x25 Max)</option>
+                        <option value="gold">Gold Rush (x100 Max)</option>
+                        <option value="platinum">Platinum VIP (High Volatility)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Buttons Group -->
+            <div class="flex gap-2 w-full md:w-auto">
+                <button id="action-btn" onclick="app.game.buyCard()" class="flex-1 md:flex-none bg-gray-100 text-black font-bold text-lg px-8 py-3 rounded-lg shadow-[0_0_15px_var(--theme-primary)] btn-push uppercase tracking-wider animate-pulse-theme disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:animate-none">
+                    Buy Card
+                </button>
+            </div>
+        </div>
+        
+        <!-- Responsible Gaming Footer -->
+        <div class="text-center mt-3 text-[10px] text-gray-500">
+            <i class="fas fa-exclamation-circle mr-1"></i> Play Responsibly. This is a simulation. No real money is involved. 
+        </div>
+    </footer>
+
+    <!-- NOTIFICATIONS CONTAINER -->
+    <div id="notification-container"></div>
+
+    <!-- MODALS -->
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 w-full max-w-sm rounded-xl p-6 shadow-2xl relative slide-up">
+            <button onclick="app.ui.closeModals()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            <h2 class="text-xl font-bold mb-6 text-center text-white">SETTINGS</h2>
+            
+            <div class="flex flex-col gap-4">
+                <div class="flex justify-between items-center bg-gray-800 p-3 rounded-lg">
+                    <span class="text-gray-300 font-bold"><i class="fas fa-volume-up mr-2"></i>Sound Effects</span>
+                    <div class="flex bg-gray-900 rounded-lg p-1">
+                        <button id="btn-sound-on" onclick="app.ui.setSound(true)" class="px-4 py-1 rounded-md text-xs font-bold transition-colors">ON</button>
+                        <button id="btn-sound-off" onclick="app.ui.setSound(false)" class="px-4 py-1 rounded-md text-xs font-bold transition-colors">OFF</button>
+                    </div>
+                </div>
+                
+                <div class="text-center text-xs text-gray-500 mt-4">
+                    Version 2.5
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Reveal Modal -->
+    <div id="batch-modal" class="hidden fixed inset-0 z-[80] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-xl p-6 shadow-2xl relative slide-up flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 shrink-0">
+                <h2 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-layer-group text-theme-secondary"></i> Batch Results</h2>
+                <button onclick="app.ui.closeModals()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="flex-grow overflow-y-auto p-2 bg-black/20 rounded-lg">
+                <div id="batch-grid" class="mini-card-grid">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-800 flex justify-between items-center shrink-0">
+                <div>
+                    <div class="text-xs text-gray-500">Total Winnings</div>
+                    <div id="batch-total-win" class="text-2xl font-mono text-theme-primary font-bold">0</div>
+                </div>
+                <button onclick="app.ui.revealAllBatch()" class="bg-theme-primary bg-yellow-500 text-black px-6 py-2 rounded-lg font-bold hover:bg-yellow-400 btn-push">
+                    SCRATCH ALL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ad Modal -->
+    <div id="ad-modal" class="hidden fixed inset-0 z-[100] bg-black flex items-center justify-center p-0">
+        <div class="w-full h-full flex flex-col relative bg-black">
+            <!-- Header -->
+            <div class="p-4 flex justify-between items-center bg-gray-900 border-b border-gray-800">
+                <span class="text-gray-400 text-xs">ADVERTISEMENT</span>
+                <div class="bg-gray-800 rounded-full px-3 py-1 text-white font-mono text-sm">
+                    <span id="ad-timer">10</span>s remaining
+                </div>
+            </div>
+            
+            <!-- Ad Content -->
+            <div class="flex-grow flex items-center justify-center bg-gray-900 relative overflow-hidden">
+                <div class="w-[300px] h-[250px] bg-white text-black flex flex-col items-center justify-center p-4 text-center border-4 border-yellow-500 shadow-2xl relative z-10">
+                    <div class="absolute top-0 right-0 bg-blue-500 text-white text-[10px] px-1">Ads by Google</div>
+                    <h3 class="font-bold text-xl mb-2">WIN BIG TODAY!</h3>
+                    <p class="text-sm text-gray-600 mb-4">This is a placeholder for Google AdSense Code.</p>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded">INSTALL NOW</button>
+                </div>
+                <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/diagmonds-light.png')]"></div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 bg-gray-900 text-center">
+                <p class="text-gray-500 text-xs">Reward will be granted after video ends.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Modal -->
+    <div id="theme-modal" class="hidden fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-xl p-6 shadow-2xl relative slide-up max-h-[80vh] overflow-y-auto">
+            <button onclick="app.ui.closeModals()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            <h2 class="text-xl font-bold mb-4"><i class="fas fa-palette text-theme-secondary"></i> Select Theme</h2>
+            <p class="text-xs text-gray-400 mb-4">Watch an Ad to unlock premium color themes!</p>
+            <div id="theme-list" class="theme-grid"></div>
+        </div>
+    </div>
+
+    <!-- Wallet Modal -->
+    <div id="wallet-modal" class="hidden fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 w-full max-w-md rounded-xl p-6 shadow-2xl relative slide-up">
+            <button onclick="app.ui.closeModals()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-wallet text-theme-secondary"></i> Wallet</h2>
+            
+            <div class="bg-black/40 p-4 rounded-lg mb-6 text-center border border-gray-800">
+                <div class="text-xs text-gray-400 uppercase tracking-widest">Balance</div>
+                <div class="text-3xl font-mono text-white font-bold my-2" id="wallet-balance-display">0.00</div>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Add Funds via Ad -->
+                <button onclick="app.ads.play('add_funds')" class="w-full bg-green-900/40 hover:bg-green-800/60 border border-green-700 p-3 rounded-lg flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-green-500 text-black w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-play"></i></div>
+                        <div class="text-left">
+                            <div class="font-bold text-green-400">Watch Ad to Add 500</div>
+                            <div class="text-[10px] text-gray-400">10 second video</div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+            <hr class="border-gray-800 my-6">
+
+            <h3 class="text-sm font-bold mb-2 text-gray-300">Withdraw Winnings</h3>
+            <div class="text-[10px] text-gray-500 mb-3">
+                Min: 5,000 | Max: 50,000 per transaction.<br>
+                Requires watching verification Ad. Balance clears on success.
+            </div>
+            <button onclick="app.wallet.initiateWithdraw()" class="w-full bg-blue-900/50 hover:bg-blue-800/50 text-blue-200 border border-blue-800 py-3 rounded-lg text-sm font-bold btn-push">
+                WITHDRAW BALANCE
+            </button>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-modal" class="hidden fixed inset-0 z-[70] bg-black/95 flex items-center justify-center p-4 font-mono text-green-500">
+        <div class="w-full max-w-2xl border border-green-800 p-6 rounded bg-black shadow-[0_0_20px_rgba(0,255,0,0.1)]">
+            <div class="flex justify-between items-center mb-4 border-b border-green-900 pb-2">
+                <h2 class="text-xl">ADMIN_CONSOLE</h2>
+                <button onclick="app.ui.toggleAdmin()" class="text-red-500">[CLOSE]</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-white bg-green-900/30 px-2 py-1 mb-2">RTP_CONTROLLER</h3>
+                    <div class="space-y-2">
+                        <label class="block text-xs">Win Chance (0.0 - 1.0)</label>
+                        <input type="range" min="0" max="1" step="0.05" id="admin-rtp" onchange="app.admin.updateRTP(this.value)" class="w-full accent-green-500">
+                        <span id="admin-rtp-val" class="text-white">0.3</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-white bg-green-900/30 px-2 py-1 mb-2">GLOBAL_ACTIONS</h3>
+                    <button onclick="app.admin.forceWinNext()" class="w-full border border-green-700 hover:bg-green-900/50 py-1 mb-2 text-xs text-left px-2">> FORCE_WIN_NEXT_ROUND</button>
+                    <button onclick="app.wallet.reset()" class="w-full border border-red-900 text-red-500 hover:bg-red-900/20 py-1 text-xs text-left px-2">> FACTORY_RESET_WALLET</button>
+                    <button onclick="localStorage.clear(); location.reload()" class="w-full border border-red-900 text-red-500 hover:bg-red-900/20 py-1 text-xs text-left px-2">> PURGE_ALL_DATA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Input Modal (Replaces Prompt) -->
+    <div id="input-modal" class="hidden fixed inset-0 z-[110] bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-gray-800 border border-gray-600 rounded-lg p-6 w-full max-w-sm slide-up">
+            <h3 id="input-modal-title" class="text-lg font-bold mb-4">Enter Value</h3>
+            <input type="password" id="input-modal-field" class="w-full bg-gray-900 border border-gray-700 p-2 rounded text-white mb-4 focus:outline-none focus:border-theme-primary">
+            <div class="flex justify-end gap-2">
+                <button onclick="document.getElementById('input-modal').classList.add('hidden')" class="px-4 py-2 text-gray-400">Cancel</button>
+                <button id="input-modal-confirm" class="bg-theme-primary text-black px-4 py-2 rounded font-bold">Submit</button>
+            </div>
+        </div>
+    </div>
+
+   
+    <script  src="script.js"></script>
+</body>
+</html>

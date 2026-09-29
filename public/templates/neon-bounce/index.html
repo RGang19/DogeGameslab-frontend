@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Bounce: Cyber Crash</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts: Orbitron for Sci-Fi look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 z-50 bg-[#050510] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="relative">
+            <div class="absolute inset-0 bg-blue-500 blur-[60px] opacity-20"></div>
+            <i class="ph-duotone ph-rocket-launch text-8xl text-[#00f3ff] animate-bounce"></i>
+        </div>
+        <h1 class="font-cyber text-5xl font-black mt-6 bg-clip-text text-transparent bg-gradient-to-r from-[#00f3ff] to-[#bc13fe]">NEON BOUNCE</h1>
+        <p class="text-slate-400 tracking-[0.5em] text-xs uppercase mt-2">Protocol: Crash x Tap</p>
+        <div class="mt-8 loader"></div>
+    </div>
+
+    <!-- 3D Canvas -->
+    <div id="canvas-container" class="absolute inset-0"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-24 right-5 z-[200] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- UI Overlay -->
+    <div id="ui-layer" class="absolute inset-0 pointer-events-none flex flex-col justify-between p-2 md:p-6">
+        
+        <!-- Top Bar: Wallet & History -->
+        <div class="pointer-events-auto flex flex-col gap-2 relative z-30">
+            
+            <!-- Navbar -->
+            <div class="flex justify-between items-center bg-black/40 backdrop-blur-md p-3 rounded-lg border-b border-white/10">
+                <div class="flex items-center gap-2 md:gap-4">
+                    <!-- Wallet -->
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 border border-yellow-500/50 rounded skew-x-[-10deg]">
+                        <i class="ph-fill ph-coins text-yellow-400 skew-x-[10deg]"></i>
+                        <span id="wallet-display" class="font-cyber font-bold text-yellow-100 skew-x-[10deg] text-lg">1000.00</span>
+                    </div>
+                    
+                    <!-- Mobile History Toggle -->
+                    <button id="history-toggle-btn" class="lg:hidden cyber-btn px-2 py-1 text-xs font-bold flex items-center gap-1">
+                        <i class="ph-bold ph-clock-counter-clockwise text-lg"></i>
+                    </button>
+
+                    <!-- Earn Button -->
+                    <button id="ad-btn" class="cyber-btn cyber-btn-primary px-3 py-1 text-xs font-bold flex items-center gap-2 hidden sm:flex">
+                        <i class="ph-bold ph-play-circle"></i> Earn $100
+                    </button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button id="theme-btn" class="cyber-btn px-2 py-2"><i class="ph-bold ph-palette"></i></button>
+                    <button id="sound-btn" class="cyber-btn px-2 py-2"><i class="ph-bold ph-speaker-high"></i></button>
+                </div>
+            </div>
+
+            <!-- Top History Strip (Recent Multipliers) -->
+            <div class="w-full overflow-x-auto history-scroll flex gap-2 p-2 mask-linear lg:w-[calc(100%-260px)]">
+                <div id="history-strip" class="flex gap-2">
+                    <!-- Javascript will populate this -->
+                    <div class="px-3 py-1 rounded bg-slate-800/50 border border-slate-700 text-xs font-mono text-slate-500">PREV:</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MOBILE SIDEBAR: History Panel (Only visible on mobile) -->
+        <div id="history-sidebar" class="pointer-events-auto fixed top-0 right-0 h-full w-64 bg-[#050510]/95 backdrop-blur-xl border-l border-[#00f3ff]/30 z-50 sidebar-closed flex flex-col pt-20 pb-4 px-4 shadow-2xl lg:hidden">
+            <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                <h3 class="font-cyber text-lg text-[#00f3ff]">TRANSACTIONS</h3>
+                <button id="close-history-btn" class="text-slate-400 hover:text-white">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="full-history-list" class="flex-1 overflow-y-auto history-scroll space-y-2">
+                <!-- JS populated rows -->
+                <div class="text-center text-slate-500 text-xs mt-10">No rounds played yet.</div>
+            </div>
+        </div>
+
+        <!-- Center: Game HUD (Small Size, Near Jump) -->
+        <div id="game-hud" class="absolute bottom-[200px] left-1/2 -translate-x-1/2 text-center pointer-events-none opacity-0 transition-opacity duration-300 floating z-20">
+            <div class="font-cyber text-4xl md:text-6xl font-black text-white drop-shadow-[0_0_15px_rgba(0,243,255,0.8)]" id="multiplier-display">1.00x</div>
+            <div class="mt-1 inline-flex items-center gap-2 px-2 py-0.5 bg-black/60 rounded border border-red-500/50 scale-90">
+                <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+                <span class="text-[10px] font-mono text-red-300">CRASH RISK: <span id="risk-display">0%</span></span>
+            </div>
+        </div>
+
+        <!-- Left Side: Leaderboard & History (Desktop) -->
+        <!-- Updated Top Position to push it down -->
+        <div class="hidden lg:flex flex-col gap-6 absolute left-6 top-[58%] -translate-y-1/2 w-64 pointer-events-auto z-20">
+            <!-- Live Bets -->
+            <div class="opacity-80">
+                <div class="text-xs font-cyber text-slate-500 mb-2 uppercase">Live Bets</div>
+                <div id="leaderboard" class="flex flex-col gap-2 max-h-40 overflow-hidden mask-bottom">
+                    <!-- JS Populated -->
+                </div>
+            </div>
+            
+            <!-- Transaction History (Desktop) -->
+            <div class="opacity-90 bg-black/40 p-3 rounded-xl border border-white/10 backdrop-blur-sm shadow-lg shadow-blue-500/5">
+                <div class="text-xs font-cyber text-[#00f3ff] mb-2 uppercase flex justify-between items-center border-b border-white/10 pb-1">
+                    <span>My History</span>
+                    <i class="ph-bold ph-clock-counter-clockwise"></i>
+                </div>
+                <div id="desktop-history-list" class="flex flex-col gap-2 max-h-56 overflow-y-auto history-scroll pr-1">
+                    <div class="text-center text-slate-500 text-[10px] mt-4">No rounds yet.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom: Controls (Wider and Bigger) -->
+        <div class="pointer-events-auto pb-6 w-full max-w-2xl mx-auto transition-transform duration-300 relative z-20 lg:pr-64" id="controls-panel">
+            
+            <!-- Betting UI -->
+            <div id="bet-ui" class="cyber-border p-6 md:p-8">
+                <div class="flex justify-between mb-4 text-sm text-[#00f3ff] uppercase font-bold tracking-widest">
+                    <span>Place Bet</span>
+                    <span>Max: 5000</span>
+                </div>
+                
+                <div class="flex gap-4 mb-6">
+                    <button onclick="game.setBet(10)" class="flex-1 bg-slate-800/50 border border-slate-700 hover:border-[#00f3ff] text-slate-300 py-3 text-sm font-mono">MIN</button>
+                    <button onclick="game.doubleBet()" class="flex-1 bg-slate-800/50 border border-slate-700 hover:border-[#00f3ff] text-slate-300 py-3 text-sm font-mono">2X</button>
+                    <button onclick="game.maxBet()" class="flex-1 bg-slate-800/50 border border-slate-700 hover:border-[#00f3ff] text-slate-300 py-3 text-sm font-mono">MAX</button>
+                </div>
+
+                <div class="relative mb-6">
+                    <input type="number" id="bet-input" value="100" class="w-full bg-black/50 border-2 border-slate-700 focus:border-[#00f3ff] text-white font-cyber text-3xl text-center py-4 outline-none transition-colors">
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-xl">$</div>
+                </div>
+
+                <button id="start-btn" class="w-full cyber-btn cyber-btn-primary py-5 text-2xl font-black tracking-widest relative overflow-hidden group">
+                    <span class="relative z-10">INITIATE ROUND</span>
+                    <div class="absolute inset-0 bg-[#0aff0a] opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                </button>
+            </div>
+
+            <!-- Playing UI (Taller and Bigger) -->
+            <div id="play-ui" class="hidden flex gap-4 h-30">
+                <button id="cashout-btn" class="flex-1 cyber-btn cyber-btn-primary flex flex-col items-center justify-center gap-2 group">
+                    <span class="text-lg font-bold tracking-widest text-[#0aff0a]">CASHOUT</span>
+                    <span id="cashout-val" class="font-cyber text-4xl font-bold text-[#0aff0a]">$0.00</span>
+                </button>
+                
+                <button id="jump-btn" class="flex-[1.5] cyber-btn flex items-center justify-center gap-4 group active:scale-95 transition-transform">
+                    <div class="w-15 h-15 rounded-full border-4 border-[#00f3ff] flex items-center justify-center group-hover:bg-[#00f3ff] group-hover:text-black transition-colors">
+                        <i class="ph-fill ph-arrow-up text-5xl"></i>
+                    </div>
+                    <span class="font-cyber text-4xl font-black tracking-wider">JUMP</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ad Modal -->
+    <div id="ad-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur flex items-center justify-center">
+        <div class="cyber-border p-8 max-w-sm w-full text-center m-4">
+            <h2 class="font-cyber text-2xl text-[#ffd700] mb-2">SPONSOR UPLINK</h2>
+            <p class="text-slate-400 text-sm mb-6">Watching transmission to receive <strong class="text-white">100 Credits</strong></p>
+            
+            <div class="w-full aspect-video bg-slate-900 border border-slate-700 mb-4 flex items-center justify-center relative overflow-hidden">
+                <div class="text-xs text-slate-600 font-mono">[ ADVERTISING SPACE ]</div>
+                <div id="ad-progress" class="absolute bottom-0 left-0 h-1 bg-[#ffd700] w-0 transition-all duration-100 ease-linear"></div>
+            </div>
+
+            <button id="claim-reward-btn" class="w-full cyber-btn text-slate-500 cursor-not-allowed py-3 font-bold" disabled>
+                WAITING...
+            </button>
+            <button onclick="game.closeAd()" class="mt-4 text-xs text-slate-500 hover:text-white underline">Close</button>
+        </div>
+    </div>
+
+    <script  src="script.js"></script>
+</body>
+</html>

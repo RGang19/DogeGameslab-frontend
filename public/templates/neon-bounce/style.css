@@ -1,0 +1,120 @@
+:root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #bc13fe;
+            --neon-green: #0aff0a;
+            --bg-dark: #050510;
+        }
+
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: var(--bg-dark); 
+            font-family: 'Rajdhani', sans-serif; 
+            color: white;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background-color 0.5s ease;
+        }
+
+        /* Cyberpunk UI Utilities */
+        .font-cyber { font-family: 'Orbitron', sans-serif; }
+        
+        .cyber-border {
+            position: relative;
+            background: rgba(10, 10, 30, 0.85);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: border-color 0.5s ease;
+        }
+
+        .cyber-btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+            clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+        }
+
+        .cyber-btn:hover:not(:disabled) {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .cyber-btn:disabled {
+            border-color: #555;
+            color: #555;
+            background: rgba(0,0,0,0.5);
+            cursor: not-allowed;
+        }
+
+        .cyber-btn-primary {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+        .cyber-btn-primary:hover:not(:disabled) {
+            background: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-green);
+        }
+
+        .cyber-btn-danger {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+        }
+        .cyber-btn-danger:hover:not(:disabled) {
+            background: var(--neon-pink);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-pink);
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0%, 100% { text-shadow: 0 0 10px currentColor; }
+            50% { text-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
+        }
+
+        .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+
+        .loader {
+            width: 60px; height: 60px;
+            border: 4px solid var(--neon-blue);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #canvas-container { z-index: 0; }
+        #ui-layer { z-index: 10; }
+        
+        /* History Bar Scroll */
+        .history-scroll::-webkit-scrollbar { height: 4px; width: 4px; }
+        .history-scroll::-webkit-scrollbar-track { background: transparent; }
+        .history-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+        /* Floating Animation for HUD */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        .floating { animation: float 3s ease-in-out infinite; }
+
+        /* Sidebar Transition */
+        #history-sidebar { transition: transform 0.3s ease-in-out; }
+        .sidebar-open { transform: translateX(0) !important; }
+        .sidebar-closed { transform: translateX(100%); }
+        /* Desktop: always show sidebar if large screen */
+        @media (min-width: 1024px) {
+            .sidebar-closed { transform: translateX(0); }
+        }
+        
+        /* Modern Toast Animation */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter { animation: slideInRight 0.3s ease-out forwards; }
