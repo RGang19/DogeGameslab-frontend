@@ -8,7 +8,11 @@ export default defineConfig(({ command }) => ({
   // DigitalOcean (production) serves this app under /create/, proxied by nginx on the main
   // app host. Cloudflare Workers serves it at its own domain root, so the build there sets
   // VITE_BASE_PATH=/ explicitly (see .github/workflows/deploy.yml). Don't hardcode this.
-  base: process.env.VITE_BASE_PATH || "/create/",
+  // Cloudflare's own CI (WORKERS_CI for Workers Builds, CF_PAGES for Pages) also gets "/",
+  // so a dashboard build command of plain `npm run build` can't ship /create/ asset URLs.
+  base:
+    process.env.VITE_BASE_PATH ||
+    (process.env.WORKERS_CI || process.env.CF_PAGES ? "/" : "/create/"),
   plugins: [
     tanstackRouter({
       target: "react",
