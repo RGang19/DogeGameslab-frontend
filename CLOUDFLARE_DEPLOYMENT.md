@@ -1,7 +1,7 @@
 # Cloudflare deployment
 
 Production is deployed as a Cloudflare Worker with static assets using Workers
-Builds. Connect this repository to the `creator-studio-frontend-tg` Worker and
+Builds. Connect this repository to the `dogegamelab-frontend` Worker and
 use:
 
 - Production branch: `main`
