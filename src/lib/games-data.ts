@@ -18,6 +18,7 @@ export type Game = {
   prompt?: string;
   likes?: number;
   shares?: number;
+  comments?: number;
   remixes?: number;
   creatorScore?: number;
   remixOf?: string;

@@ -9,6 +9,14 @@ import { cn } from "@/lib/utils";
 
 export type GamePosterSize = "featured" | "standard" | "compact";
 
+/** Engagement counters shown in the card's label strip. */
+const SOCIAL_STATS = [
+  { key: "likes", label: "likes", icon: "heart", className: "text-magenta" },
+  { key: "shares", label: "shares", icon: "send", className: "text-cyan" },
+  { key: "comments", label: "comments", icon: "chat", className: "text-amber" },
+  { key: "remixes", label: "remixes", icon: "remix", className: "text-phos" },
+] as const;
+
 /**
  * Game cartridge: a CRT screen showing the cover, with a label strip below.
  * Hovering (or focusing) lights the frame and flashes PRESS START.
@@ -42,6 +50,7 @@ export function GamePosterCard({
       ? `${game.creator.slice(0, 6)}…${game.creator.slice(-4)}`
       : game.creator;
   const tone = categoryTone(game.category);
+  const hasSocialCounts = SOCIAL_STATS.some((stat) => typeof game[stat.key] === "number");
 
   return (
     <article
@@ -68,6 +77,12 @@ export function GamePosterCard({
           emojiClass={size === "compact" ? "text-4xl" : "text-5xl"}
           imageClassName="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.04]"
         />
+
+        <span className="pointer-events-none absolute left-2 top-2 z-[4]">
+          <Tag tone={tone} className="bg-ink-0">
+            {game.category}
+          </Tag>
+        </span>
 
         <span className="pointer-events-none absolute inset-0 z-[3] grid place-items-center bg-ink-0/55 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
           <span className="font-pixel animate-blink text-[10px] text-phos glow-phos">
@@ -122,8 +137,8 @@ export function GamePosterCard({
 
       <div
         className={cn(
-          "flex min-w-0 flex-1 flex-col gap-1.5",
-          size === "featured" ? "p-3" : "p-2.5",
+          "flex min-w-0 flex-1 flex-col gap-1",
+          size === "featured" ? "px-3 py-2" : "px-2.5 py-1.5",
         )}
       >
         <div className="flex min-w-0 items-start justify-between gap-2">
@@ -136,19 +151,28 @@ export function GamePosterCard({
           >
             {game.title}
           </h3>
-          {typeof game.likes === "number" && game.likes > 0 && (
-            <span className="flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold text-magenta">
-              <PixelIcon name="heart" size={9} />
-              {formatCount(game.likes)}
-            </span>
-          )}
         </div>
-        <div className="flex min-w-0 items-center justify-between gap-2">
-          <Tag tone={tone}>{game.category}</Tag>
-          <span className="min-w-0 truncate font-mono text-[10px] text-text-3" title={game.creator}>
-            @{creator}
-          </span>
-        </div>
+        <span className="min-w-0 truncate font-mono text-[10px] text-text-3" title={game.creator}>
+          @{creator}
+        </span>
+        {hasSocialCounts && (
+          <ul
+            className="grid grid-cols-4 gap-1 font-mono text-[10px] font-bold leading-none"
+            aria-label="Game engagement"
+          >
+            {SOCIAL_STATS.map((stat) => (
+              <li
+                key={stat.key}
+                className={cn("flex min-w-0 items-center gap-1", stat.className)}
+                title={`${formatCount(game[stat.key] ?? 0)} ${stat.label}`}
+              >
+                <PixelIcon name={stat.icon} size={9} className="shrink-0" />
+                <span className="truncate tabular-nums">{formatCount(game[stat.key] ?? 0)}</span>
+                <span className="sr-only">{stat.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </article>
   );

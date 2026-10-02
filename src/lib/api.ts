@@ -73,7 +73,7 @@ export function storeAuthToken(
 ) {
   try {
     localStorage.setItem(TOKEN_KEY, token);
-    const identityKey = (userId ?? evmWalletAddress ?? getCurrentUserId() ?? "").toLowerCase();
+    const identityKey = normalizeIdentity(userId ?? evmWalletAddress ?? getCurrentUserId() ?? "");
     if (identityKey) localStorage.setItem(TOKEN_USER_KEY, identityKey);
     if (evmWalletAddress) {
       localStorage.setItem(TOKEN_EVM_WALLET_KEY, evmWalletAddress.toLowerCase());
@@ -160,6 +160,7 @@ async function postAuth(path: string, body: Record<string, unknown>) {
       status: axiosError?.response?.status ?? null,
       code: axiosError?.code ?? null,
       message: axiosError?.message ?? String(error),
+      reason: (axiosError?.response?.data as { error?: string } | undefined)?.error ?? null,
     });
     throw error;
   }
@@ -169,10 +170,8 @@ async function fetchTokenWithWallet(): Promise<string | null> {
   if (Date.now() < signInBlockedUntil) return null;
 
   const signer = walletSigner;
-  if (!signer) {
-    studioAuthWarn("no DogeOS wallet connected — cannot sign in");
-    return null;
-  }
+  // Signed out: public requests simply go without a token.
+  if (!signer) return null;
 
   try {
     const challenge = await postAuth("challenge", { address: signer.address });

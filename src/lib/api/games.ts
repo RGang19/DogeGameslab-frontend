@@ -10,6 +10,7 @@ export function mapApiGameToGame(g: Record<string, unknown>, index: number): Gam
     (typeof g.username === "string" && g.username) ||
     (typeof g.displayName === "string" && g.displayName);
   const points = g.points as Record<string, unknown> | undefined;
+  const counts = g.socialCounts as Record<string, unknown> | undefined;
   return {
     title: String(g.title ?? "Untitled"),
     category: typeof g.category === "string" ? g.category : "Game",
@@ -27,8 +28,10 @@ export function mapApiGameToGame(g: Record<string, unknown>, index: number): Gam
       typeof g.templateId === "string" && g.templateId !== g.id ? g.templateId : undefined,
     thumbnailUrl: resolveGameThumbnail(g),
     templateId: String(g.id ?? g.templateId ?? ""),
-    likes: Number(points?.likes ?? 0),
-    shares: Number(points?.shares ?? 0),
+    likes: Number(counts?.likes ?? points?.likes ?? 0),
+    shares: Number(counts?.shares ?? points?.shares ?? 0),
+    comments: Number(counts?.comments ?? 0),
+    remixes: Number(counts?.remixes ?? 0),
     creatorScore: Number(g.creatorScore ?? points?.total ?? 0),
     remixOf: typeof g.remixOf === "string" ? g.remixOf : undefined,
     createdAt: typeof g.createdAt === "string" ? g.createdAt : undefined,

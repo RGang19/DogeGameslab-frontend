@@ -1,4 +1,4 @@
-import { useAccount, useWalletConnect, WalletConnectProvider } from "@dogeos/dogeos-sdk";
+import { useWalletConnect, WalletConnectProvider } from "@dogeos/dogeos-sdk";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { WagmiProvider } from "wagmi";
@@ -9,9 +9,18 @@ import {
   prefetchAuthToken,
   registerWalletSigner,
 } from "@/lib/api";
-import { buildDogeOSConfig, DOGEOS_CLIENT_ID, wagmiConfig } from "@/lib/dogeos";
+import {
+  buildDogeOSConfig,
+  DOGEOS_CLIENT_ID,
+  loadDogeOSChains,
+  loadDogeOSConnectors,
+  wagmiConfig,
+  type DogeOSChains,
+  type DogeOSConnectors,
+} from "@/lib/dogeos";
 import { clearWalletIdentity, setWalletIdentity } from "@/lib/identity";
 import { queryClient } from "@/lib/queryClient";
+import { useEvmAccount } from "@/lib/useEvmAccount";
 
 // The SDK injects its own Tailwind build (<style id="__wallet-connect-kit-styles__">)
 // at the END of <head>, so its `.hidden`, `.flex`… would override the app's
@@ -51,40 +60,24 @@ function useAppTheme() {
   return theme;
 }
 
-export function isEvmAddress(value?: string | null): value is string {
-  return Boolean(value && /^0x[a-fA-F0-9]{40}$/.test(value));
-}
-
-function signatureToHex(signature: string | Uint8Array) {
-  if (typeof signature === "string") return signature;
-  return `0x${Array.from(signature, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
-}
-
 /**
- * Mirrors the DogeOS wallet session into the app: the connected EVM address is
- * the user's identity, and the wallet signs the backend's sign-in challenge to
- * obtain the studio JWT. Disconnecting in the DogeOS modal signs the user out.
+ * Mirrors the DogeOS wallet session into the app: the connected wallet's EVM
+ * (DogeOS) address is the user's identity, and the wallet signs the backend's
+ * sign-in challenge to obtain the studio JWT. This works whether the wallet was
+ * connected on its EVM side or, like MyDoge, on its Dogecoin side. Disconnecting
+ * in the DogeOS modal signs the user out.
  */
 function DogeOSSessionSync() {
   const { connectionStatus } = useWalletConnect();
-  const { address, chainType, currentWallet, signMessage } = useAccount();
-  const evmAddress = chainType === "evm" && isEvmAddress(address) ? address.toLowerCase() : null;
-  const walletName = currentWallet?.info?.name ?? null;
+  const { accountAddress, walletName, signForSignIn } = useEvmAccount();
   const previousAddressRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (evmAddress) {
-      setWalletIdentity({ walletAddress: evmAddress, walletName });
-      registerWalletSigner(
-        signMessage
-          ? {
-              address: evmAddress,
-              signMessage: async (message) => signatureToHex(await signMessage({ message })),
-            }
-          : null,
-      );
-      if (previousAddressRef.current !== evmAddress) {
-        previousAddressRef.current = evmAddress;
+    if (accountAddress) {
+      setWalletIdentity({ walletAddress: accountAddress, walletName });
+      registerWalletSigner({ address: accountAddress, signMessage: signForSignIn });
+      if (previousAddressRef.current !== accountAddress) {
+        previousAddressRef.current = accountAddress;
         if (!hasUsableCachedToken()) {
           clearAuthToken();
           void prefetchAuthToken(true).catch(() => null);
@@ -101,7 +94,7 @@ function DogeOSSessionSync() {
       clearAuthToken();
       clearWalletIdentity();
     }
-  }, [connectionStatus, evmAddress, signMessage, walletName]);
+  }, [accountAddress, connectionStatus, signForSignIn, walletName]);
 
   return null;
 }
@@ -116,10 +109,31 @@ if (!DOGEOS_CLIENT_ID) {
 
 export function DogeOSProvider({ children }: { children: ReactNode }) {
   const theme = useAppTheme();
+  // The SDK's own chain list (EVM + Dogecoin + Solana) plus 0G. Loaded once
+  // before the SDK starts; it falls back to DogeOS + 0G if loading stalls.
+  const [chains, setChains] = useState<DogeOSChains | null>(null);
+  const [connectors, setConnectors] = useState<DogeOSConnectors | undefined>(undefined);
+  useEffect(() => {
+    let cancelled = false;
+    // Wallet list loads alongside the chains so MyDoge is matched to the
+    // globals the installed extension really exposes.
+    void Promise.all([loadDogeOSChains(), loadDogeOSConnectors()]).then(
+      ([loadedChains, loadedConnectors]) => {
+        if (cancelled) return;
+        setConnectors(loadedConnectors);
+        setChains(loadedChains);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const config = useMemo(() => {
-    const next = buildDogeOSConfig(theme);
+    const next = buildDogeOSConfig(theme, chains ?? undefined, connectors);
     return next.clientId ? next : { ...next, clientId: MISSING_CLIENT_ID };
-  }, [theme]);
+  }, [chains, connectors, theme]);
+
+  if (!chains) return null;
 
   return (
     <WagmiProvider config={wagmiConfig}>

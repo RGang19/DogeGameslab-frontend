@@ -37,12 +37,24 @@ function notifyIdentityChanged() {
   window.dispatchEvent(new CustomEvent(IDENTITY_CHANGED_EVENT));
 }
 
+// DogeOS (EVM) addresses compare case-insensitively and are stored lowercase;
+// Dogecoin addresses (D…, e.g. from MyDoge) are case-sensitive and kept exact.
+const EVM_ADDRESS = /^0x[a-fA-F0-9]{40}$/;
+const DOGECOIN_ADDRESS = /^[Dn][1-9A-HJ-NP-Za-km-z]{25,34}$/;
+
+export function normalizeWalletAddress(value: string | null | undefined): string | null {
+  const raw = String(value ?? "").trim();
+  if (EVM_ADDRESS.test(raw)) return raw.toLowerCase();
+  if (DOGECOIN_ADDRESS.test(raw)) return raw;
+  return null;
+}
+
 export function setWalletIdentity(identity: {
   walletAddress: string;
   walletName?: string | null;
   username?: string | null;
 }) {
-  const address = identity.walletAddress.trim().toLowerCase();
+  const address = normalizeWalletAddress(identity.walletAddress) ?? identity.walletAddress.trim();
   const changed = readStorage(WALLET_KEY) !== address;
   writeStorage(WALLET_KEY, address);
   writeStorage(WALLET_NAME_KEY, identity.walletName);
@@ -75,7 +87,7 @@ export function clearLegacyAnonymousIdentity() {
 
 export function getWalletAddress(): string | null {
   const value = readStorage(WALLET_KEY);
-  return value && /^0x[a-fA-F0-9]{40}$/.test(value) ? value.toLowerCase() : null;
+  return normalizeWalletAddress(value);
 }
 
 /** Returns the authenticated user's id, or an empty value for public visitors. */
@@ -89,9 +101,7 @@ export function getCurrentUserId(): string {
  * raw user id and must fall back to a temporary id-derived label.
  */
 export function hasDisplayName(): boolean {
-  return Boolean(
-    readStorage(CUSTOM_NAME_KEY) || readStorage(USERNAME_KEY) || getWalletAddress(),
-  );
+  return Boolean(readStorage(CUSTOM_NAME_KEY) || readStorage(USERNAME_KEY) || getWalletAddress());
 }
 
 // A short, readable stand-in derived from the raw user id. Used only until a
@@ -137,15 +147,7 @@ function normalizeIdentity(value: string | null | undefined): string | null {
 
 /** All ids that should resolve to the current signed-in creator. */
 export function getIdentityAliases(): string[] {
-  return [
-    ...new Set(
-      [
-        getCurrentUserId(),
-      ]
-        .map(normalizeIdentity)
-        .filter(Boolean),
-    ),
-  ] as string[];
+  return [...new Set([getCurrentUserId()].map(normalizeIdentity).filter(Boolean))] as string[];
 }
 
 /** True when `creatorId` belongs to the current user (or is unset/legacy). */

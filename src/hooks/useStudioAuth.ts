@@ -1,11 +1,12 @@
-import { useAccount, useWalletConnect } from "@dogeos/dogeos-sdk";
+import { useWalletConnect } from "@dogeos/dogeos-sdk";
 import { useCallback, useMemo, useRef, useState } from "react";
 
-import { clearAuthToken, registerWalletSigner } from "@/lib/api";
+import { clearAuthToken, hasUsableCachedToken, registerWalletSigner } from "@/lib/api";
 import { DOGEOS_CLIENT_ID } from "@/lib/dogeos";
 import { clearAllBrowserStorage, clearAllClientCookies } from "@/lib/fullLogout";
 import { clearWalletIdentity, getWalletAddress, setWalletIdentity } from "@/lib/identity";
 import { useDogeWallet } from "@/lib/useDogeWallet";
+import { useEvmAccount } from "@/lib/useEvmAccount";
 
 export type StudioAuthStatus = "idle" | "error";
 
@@ -15,20 +16,20 @@ export type StudioUser = { id: string; address: string; walletName: string | nul
 export function useStudioAuth() {
   const { isConnected, isConnecting, connectionStatus, error, openModal, disconnect } =
     useWalletConnect();
-  const { address, chainType, currentWallet } = useAccount();
+  const { accountAddress, walletName } = useEvmAccount();
   const { linkWalletOnZeroGChain } = useDogeWallet();
   const [authStatus, setAuthStatus] = useState<StudioAuthStatus>("idle");
   const signingOutRef = useRef(false);
 
-  const evmAddress =
-    isConnected && chainType === "evm" && address && /^0x[a-fA-F0-9]{40}$/.test(address)
-      ? address.toLowerCase()
-      : null;
-  const walletName = currentWallet?.info?.name ?? null;
+  // Already signed in earlier (valid studio session for the saved wallet)? Then
+  // the user is signed in right away — no modal, no new signature — while the
+  // wallet extension reconnects in the background.
+  const restoredAddress = !accountAddress && hasUsableCachedToken() ? getWalletAddress() : null;
+  const signedInAddress = accountAddress ?? restoredAddress;
 
   const user = useMemo<StudioUser | null>(
-    () => (evmAddress ? { id: evmAddress, address: evmAddress, walletName } : null),
-    [evmAddress, walletName],
+    () => (signedInAddress ? { id: signedInAddress, address: signedInAddress, walletName } : null),
+    [signedInAddress, walletName],
   );
 
   const openLogin = useCallback(async () => {
@@ -37,10 +38,10 @@ export function useStudioAuth() {
   }, [openModal]);
 
   const syncWalletIdentity = useCallback(async () => {
-    if (!evmAddress) return getWalletAddress();
-    setWalletIdentity({ walletAddress: evmAddress, walletName });
-    return evmAddress;
-  }, [evmAddress, walletName]);
+    if (!accountAddress) return getWalletAddress();
+    setWalletIdentity({ walletAddress: accountAddress, walletName });
+    return accountAddress;
+  }, [accountAddress, walletName]);
 
   const signOut = useCallback(async () => {
     if (signingOutRef.current) return;
@@ -69,8 +70,9 @@ export function useStudioAuth() {
 
   return {
     configured: Boolean(DOGEOS_CLIENT_ID),
-    ready: connectionStatus !== "connecting",
-    authenticated: Boolean(evmAddress),
+    // A restored session is ready immediately, even while the SDK reconnects.
+    ready: Boolean(restoredAddress) || connectionStatus !== "connecting",
+    authenticated: Boolean(signedInAddress),
     user,
     authLoading: isConnecting,
     authStatus,

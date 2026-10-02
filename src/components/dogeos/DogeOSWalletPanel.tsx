@@ -137,7 +137,10 @@ export function DogeOSWalletPanel({
 
   if (!walletAddress) return null;
 
-  const dogecoinTotal = balances.dogecoin ? BigInt(Math.round(balances.dogecoin.total)) : null;
+  const dogecoinTotal =
+    balances.dogecoin && Number.isFinite(balances.dogecoin.total)
+      ? BigInt(Math.round(balances.dogecoin.total))
+      : null;
 
   return (
     <div className={cn("text-text", className)}>

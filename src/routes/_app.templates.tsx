@@ -116,7 +116,7 @@ function Templates() {
                     <img
                       src={getThumbnailUrl(t.id)}
                       alt=""
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                       decoding="async"
                       onError={() => markImageFailed(String(t.id))}

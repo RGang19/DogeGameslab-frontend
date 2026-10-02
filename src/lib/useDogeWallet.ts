@@ -2,6 +2,8 @@ import { ChainTypeEnum, useAccount, useConnectors, useWalletConnect } from "@dog
 import { BrowserProvider, type Eip1193Provider } from "ethers";
 import { useCallback } from "react";
 
+import { useEvmAccount } from "@/lib/useEvmAccount";
+
 import { prefetchAuthToken } from "@/lib/api";
 import { dogeOSChain, fetchDogeOSBalance, zeroGChain } from "@/lib/dogeos";
 import { getWalletAddress } from "@/lib/identity";
@@ -19,41 +21,70 @@ export type DogecoinBalance = { confirmed: number; unconfirmed: number; total: n
 
 type DogecoinProvider = { getBalance?: () => Promise<DogecoinBalance> };
 
-function isEvmAddress(value?: string | null): value is string {
-  return Boolean(value && /^0x[a-fA-F0-9]{40}$/.test(value));
-}
-
 /**
  * The connected DogeOS wallet: identity on DogeOS, and the payer for 0G
  * generations/subscriptions (it switches to 0G mainnet to send payments).
  */
 export function useDogeWallet() {
   const { isConnected, openModal } = useWalletConnect();
-  const { address, chainType, chainId, currentProvider, currentWallet, switchChain } = useAccount();
+  const { chainType, currentWallet, switchChain } = useAccount();
   const { connectors } = useConnectors();
+  const { evmAddress, evmProvider, chainIdNumber, walletName, dogecoinAddress } = useEvmAccount();
 
-  const evmAddress =
-    isConnected && chainType === "evm" && isEvmAddress(address) ? address.toLowerCase() : null;
   const walletAddress = evmAddress ?? getWalletAddress();
-  const walletName = currentWallet?.info?.name ?? null;
-  const isEmbeddedWallet = Boolean((currentWallet as { isEmbeddedWallet?: boolean } | null)?.isEmbeddedWallet);
+  const isEmbeddedWallet = Boolean(
+    (currentWallet as { isEmbeddedWallet?: boolean } | null)?.isEmbeddedWallet,
+  );
 
   const requireWallet = useCallback(() => {
-    if (!evmAddress || !currentProvider) {
+    if (dogecoinAddress && !evmAddress) {
+      // MyDoge's extension only has a Dogecoin account; 0G payments need an EVM one.
+      throw new Error(
+        "Paying in 0G needs a DogeOS (0x) wallet. Your MyDoge account is Dogecoin-only — sign in with DogeOS email, Google or X to pay.",
+      );
+    }
+    if (!evmAddress || !evmProvider) {
       openModal();
       throw new Error("Connect your DogeOS wallet to continue.");
     }
-    return { address: evmAddress, provider: currentProvider as unknown as Eip1193Provider };
-  }, [currentProvider, evmAddress, openModal]);
+    return { address: evmAddress, provider: evmProvider };
+  }, [dogecoinAddress, evmAddress, evmProvider, openModal]);
 
   const switchToChain = useCallback(
     async (chain: typeof dogeOSChain | typeof zeroGChain) => {
       const { provider } = requireWallet();
-      if (Number(chainId) === chain.id) return provider;
-      await switchChain({ chainType: ChainTypeEnum.EVM, chainInfo: chain });
+      if (chainType === "evm") {
+        // chainId from the SDK is CAIP ("eip155:16661"); compare the number only.
+        if (chainIdNumber === chain.id) return provider;
+        await switchChain({ chainType: ChainTypeEnum.EVM, chainInfo: chain });
+        return provider;
+      }
+      // Connected on a non-EVM side (e.g. MyDoge's Dogecoin account): switch the
+      // wallet's EVM provider directly.
+      const hexId = `0x${chain.id.toString(16)}`;
+      try {
+        await provider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: hexId }],
+        });
+      } catch (error) {
+        if ((error as { code?: number })?.code !== 4902) throw error;
+        await provider.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: hexId,
+              chainName: chain.name,
+              nativeCurrency: chain.nativeCurrency,
+              rpcUrls: [...chain.rpcUrls.default.http],
+              blockExplorerUrls: chain.blockExplorers ? [chain.blockExplorers.default.url] : [],
+            },
+          ],
+        });
+      }
       return provider;
     },
-    [chainId, requireWallet, switchChain],
+    [chainIdNumber, chainType, requireWallet, switchChain],
   );
 
   /** The wallet's EIP-1193 provider, switched to 0G mainnet for payments. */
@@ -76,11 +107,22 @@ export function useDogeWallet() {
 
   /** Dogecoin L1 balance (satoshis) when the wallet exposes a Dogecoin account. */
   const readDogecoinBalance = useCallback(async (): Promise<DogecoinBalance | null> => {
-    const provider = (connectors as { dogecoin?: { provider?: DogecoinProvider } & DogecoinProvider } | null)
-      ?.dogecoin;
+    const provider = (
+      connectors as { dogecoin?: { provider?: DogecoinProvider } & DogecoinProvider } | null
+    )?.dogecoin;
     const dogecoin = provider?.provider ?? provider;
     if (typeof dogecoin?.getBalance !== "function") return null;
-    return dogecoin.getBalance();
+    // Wallets differ: DogeOS returns { confirmed, unconfirmed, total }; MyDoge's
+    // `window.doge` returns { balance } (in koinu, 1e-8 DOGE). Normalise both.
+    const raw = (await dogecoin.getBalance()) as unknown as Record<string, unknown> | null;
+    const num = (value: unknown) => {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : null;
+    };
+    const total = num(raw?.total) ?? num(raw?.balance) ?? null;
+    if (total === null) return null;
+    const confirmed = num(raw?.confirmed) ?? total;
+    return { confirmed, unconfirmed: num(raw?.unconfirmed) ?? 0, total };
   }, [connectors]);
 
   /**
@@ -127,7 +169,7 @@ export function useDogeWallet() {
     walletAddress,
     walletName,
     isEmbeddedWallet,
-    chainId: chainId ? Number(chainId) : null,
+    chainId: chainIdNumber,
     hasEvmWallet: Boolean(evmAddress),
     walletLinkedOnSession: isWalletLinkedOnSession(walletAddress),
     openWalletModal: openModal,
